@@ -13,6 +13,9 @@
               <el-tab-pane label="Cuenta" name="account">
                 <account :user="user" />
               </el-tab-pane>
+              <el-tab-pane label="Notificaciones" name="timeline">
+                <timeline />
+              </el-tab-pane>
             </el-tabs>
           </el-card>
         </el-col>
@@ -26,10 +29,11 @@
 import { mapGetters } from 'vuex'
 import UserCard from './components/UserCard'
 import Account from './components/Account'
+import Timeline from './components/Timeline'
 
 export default {
   name: 'Profile',
-  components: { UserCard, Account },
+  components: { UserCard, Account, Timeline },
   data() {
     return {
       user: {},
