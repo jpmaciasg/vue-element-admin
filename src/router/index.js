@@ -7,12 +7,12 @@ Vue.use(Router)
 import Layout from '@/layout'
 
 /* Router Modules */
-import componentsRouter from './modules/components'
-import chartsRouter from './modules/charts'
+// import componentsRouter from './modules/components'
+// import chartsRouter from './modules/charts'
 import invoiceRouter from './modules/invoices'
 import clientRouter from './modules/clients'
 import userRouter from './modules/users'
-import tableRouter from './modules/table'
+// import tableRouter from './modules/table'
 // import nestedRouter from './modules/nested'
 
 /**
@@ -138,7 +138,7 @@ export const asyncRoutes = [
   invoiceRouter,
   userRouter,
   clientRouter,
-  {
+  /* {
     path: '/permission',
     component: Layout,
     redirect: '/permission/page',
@@ -194,7 +194,7 @@ export const asyncRoutes = [
     }]
   },
 
-  /** when your routing map is too long, you can split it into small modules **/
+  /** when your routing map is too long, you can split it into small modules ** /
   componentsRouter,
   chartsRouter,
   // nestedRouter,
@@ -419,7 +419,7 @@ export const asyncRoutes = [
         icon: 'link'
       }
     }]
-  },
+  }, */
 
   // 404 page must be placed at the end !!!
   {
