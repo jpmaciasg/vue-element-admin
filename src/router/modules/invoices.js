@@ -14,30 +14,24 @@ const invoiceRouter = {
   children: [
     {
       path: 'list',
-      component: () => import('@/views/table/complex-table'),
+      component: () => import('@/views/invoice/complex-table'),
       name: 'ComplexTable',
       meta: {
-        title: 'Complex Table',
+        title: 'Listado',
         roles: ['admin', 'operator', 'promotor', 'supervisor']
       }
     },
     {
-      path: 'dynamic-table',
-      component: () => import('@/views/table/dynamic-table/index'),
+      path: 'add',
+      component: () => import('@/views/invoice/dynamic-table/index'),
       name: 'DynamicTable',
-      meta: { title: 'Dynamic Table' }
+      meta: { title: 'Agregar facturas' }
     },
     {
-      path: 'drag-table',
-      component: () => import('@/views/table/drag-table'),
+      path: 'missing',
+      component: () => import('@/views/invoice/drag-table'),
       name: 'DragTable',
-      meta: { title: 'Drag Table' }
-    },
-    {
-      path: 'inline-edit-table',
-      component: () => import('@/views/table/inline-edit-table'),
-      name: 'InlineEditTable',
-      meta: { title: 'Inline Edit' }
+      meta: { title: 'Faltantes' }
     }
   ]
 }
