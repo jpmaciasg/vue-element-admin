@@ -1,28 +1,65 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.title" placeholder="Title" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-select v-model="listQuery.importance" placeholder="Imp" clearable style="width: 90px" class="filter-item">
-        <el-option v-for="item in importanceOptions" :key="item" :label="item" :value="item" />
-      </el-select>
-      <el-select v-model="listQuery.type" placeholder="Type" clearable class="filter-item" style="width: 130px">
+      <el-input v-model="listQuery.title" placeholder="RFC, cliente, factura" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <!-- <el-select v-model="listQuery.type" placeholder="Type" clearable class="filter-item" style="width: 130px">
         <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name+'('+item.key+')'" :value="item.key" />
+      </el-select> -->
+
+      <el-date-picker v-model="listQuery.from" type="date" placeholder="Fecha inicial" class="filter-item"/>
+      <el-date-picker v-model="listQuery.to" type="date" placeholder="Fecha final" class="filter-item"/>
+      <el-select v-model="listQuery.promotor" placeholder="Promotor" clearable style="width: 210px" class="filter-item">
+       <!--  <el-option key="0" label="-- Seleccionar --" value="" /> -->
+        <el-option v-for="item in promotorList" :key="item.id" :label="item.first_name + ' ' + item.last_name" :value="item" />
       </el-select>
-      <el-select v-model="listQuery.sort" style="width: 140px" class="filter-item" @change="handleFilter">
+      <br />
+      
+      <span class="filter-item" style="font-weight: bold">Pagos: </span>
+<el-checkbox-group v-model="listQuery.payment" class="filter-item">
+      <el-checkbox label="Pagada" name="pay"></el-checkbox>
+      <el-checkbox label="Por confirmar" name="pay"></el-checkbox>
+      <el-checkbox label="No pagada" name="pay"></el-checkbox>
+
+    </el-checkbox-group>
+
+
+
+<!--
+      <el-radio-group v-model="listQuery.payment" class="filter-item"> Test
+      <el-radio label="Pagada"></el-radio>
+      <el-radio label="Por confirmar"></el-radio>
+      <el-radio label="No pagada"></el-radio>
+      <el-radio label="Omitir"></el-radio>
+      </el-radio-group> -->
+
+      &nbsp;&nbsp;&nbsp;<span class="filter-item" style="font-weight: bold">Estado: </span>
+
+      <el-checkbox-group v-model="listQuery.active" class="filter-item">
+      <el-checkbox label="Activa" name="act" value="1"></el-checkbox>a
+      <el-checkbox label="Cancelada" name="act" value="0"></el-checkbox>b
+</el-checkbox-group>
+<!--
+    </el-checkbox-group>
+      <el-radio-group v-model="listQuery.active" class="filter-item">
+      <el-radio label="Activa"></el-radio>
+      <el-radio label="Cancelada"></el-radio>
+      <el-radio label="Omitir"></el-radio>
+      </el-radio-group> -->
+ <br />
+
+      <!-- <el-select v-model="listQuery.sort" style="width: 140px" class="filter-item" @change="handleFilter">
         <el-option v-for="item in sortOptions" :key="item.key" :label="item.label" :value="item.key" />
-      </el-select>
+      </el-select> -->
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
-        Search
+        Buscar
       </el-button>
-      <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate">
+      <!-- <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate">
         Add
-      </el-button>
+      </el-button> -->
       <el-button v-waves :loading="downloadLoading" class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">
-        Export
+        Exportar
       </el-button>
-      <el-checkbox v-model="showReviewer" class="filter-item" style="margin-left:15px;" @change="tableKey=tableKey+1">
-        reviewer
-      </el-checkbox>
+      
     </div>
 
     <el-table
@@ -34,64 +71,73 @@
       highlight-current-row
       style="width: 100%;"
       @sort-change="sortChange"
+      show-summary
     >
-      <el-table-column label="ID" prop="id" sortable="custom" align="center" width="80">
+      <el-table-column label="ID" prop="fac_key" sortable="custom" align="center" width="80">
         <template slot-scope="scope">
-          <span>{{ scope.row.id }}</span>
+          <span>{{ scope.row.fac_key }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="Date" width="150px" align="center">
+      <el-table-column label="Factura" sortable="custom" align="center" width="100">
         <template slot-scope="scope">
-          <span>{{ scope.row.timestamp | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
+          <span>{{ scope.row.fac_serie }} {{ scope.row.fac_folio }} </span>
         </template>
       </el-table-column>
-      <el-table-column label="Title" min-width="150px">
-        <template slot-scope="{row}">
-          <span class="link-type" @click="handleUpdate(row)">{{ row.title }}</span>
+      <el-table-column label="Fecha" width="150px" align="center">
+        <template slot-scope="scope">
+          <span>{{ scope.row.fac_fecha | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="Cliente" min-width="250px">
+        <!-- <template slot-scope="{row}">
+          <span class="link-type" @click="handleUpdate(row)">{{ row.fac_receptornombre }}</span>
           <el-tag>{{ row.type | typeFilter }}</el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column label="Author" width="110px" align="center">
+        </template> -->
         <template slot-scope="scope">
-          <span>{{ scope.row.author }}</span>
+          <span>{{ scope.row.fac_receptornombre }}<br />{{ scope.row.fac_receptornombre }}</span>
         </template>
       </el-table-column>
-      <el-table-column v-if="showReviewer" label="Reviewer" width="110px" align="center">
+      <el-table-column label="Totales" width="110px" align="center">
+        <template slot-scope="scope">
+          <span>{{ scope.row.fac_total }}</span><span>{{ scope.row.fac_pagado }}</span>
+        </template>
+      </el-table-column>
+      <!-- <el-table-column v-if="showReviewer" label="Reviewer" width="110px" align="center">
         <template slot-scope="scope">
           <span style="color:red;">{{ scope.row.reviewer }}</span>
         </template>
-      </el-table-column>
-      <el-table-column label="Imp" width="80px">
+      </el-table-column> -->
+      <!-- <el-table-column label="Imp" width="80px">
         <template slot-scope="scope">
           <svg-icon v-for="n in +scope.row.importance" :key="n" icon-class="star" class="meta-item__icon" />
         </template>
-      </el-table-column>
-      <el-table-column label="Readings" align="center" width="95">
+      </el-table-column> -->
+      <!-- <el-table-column label="Readings" align="center" width="95">
         <template slot-scope="{row}">
           <span v-if="row.pageviews" class="link-type" @click="handleFetchPv(row.pageviews)">{{ row.pageviews }}</span>
           <span v-else>0</span>
         </template>
-      </el-table-column>
-      <el-table-column label="Status" class-name="status-col" width="100">
+      </el-table-column> -->
+      <el-table-column label="Estado" class-name="status-col" width="100">
         <template slot-scope="{row}">
-          <el-tag :type="row.status | statusFilter">
+          <el-tag :type="row.fac_pagada | statusFilter">
             {{ row.status }}
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="Actions" align="center" width="230" class-name="small-padding fixed-width">
+      <el-table-column label="Operaciones" align="center" width="230" class-name="small-padding fixed-width">
         <template slot-scope="{row}">
           <el-button type="primary" size="mini" @click="handleUpdate(row)">
-            Edit
+            Ver
           </el-button>
-          <el-button v-if="row.status!='published'" size="mini" type="success" @click="handleModifyStatus(row,'published')">
-            Publish
+          <el-button v-if="row.status!='1'" size="mini" type="success" @click="handleModifyStatus(row,'published')">
+            Pagada
           </el-button>
-          <el-button v-if="row.status!='draft'" size="mini" @click="handleModifyStatus(row,'draft')">
-            Draft
+          <el-button v-if="row.status!='3'" size="mini" @click="handleModifyStatus(row,'draft')">
+            Confirmar
           </el-button>
-          <el-button v-if="row.status!='deleted'" size="mini" type="danger" @click="handleModifyStatus(row,'deleted')">
-            Delete
+          <el-button v-if="row.status!='2'" size="mini" type="danger" @click="handleModifyStatus(row,'deleted')">
+            No Pagada
           </el-button>
         </template>
       </el-table-column>
@@ -147,7 +193,7 @@
 </template>
 
 <script>
-import { fetchList, fetchPv, createArticle, updateArticle } from '@/api/article'
+import { fetchList, fetchPv, updateArticle, fetchFirstUnpaidDate, fetchPromotorsList } from '@/api/invoice'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
@@ -166,15 +212,15 @@ const calendarTypeKeyValue = calendarTypeOptions.reduce((acc, cur) => {
 }, {})
 
 export default {
-  name: 'ComplexTable',
+  name: 'InvoiceListTable',
   components: { Pagination },
   directives: { waves },
   filters: {
     statusFilter(status) {
       const statusMap = {
-        published: 'success',
-        draft: 'info',
-        deleted: 'danger'
+        '1': 'success',
+        '3': 'info',
+        '2': 'danger'
       }
       return statusMap[status]
     },
@@ -191,12 +237,17 @@ export default {
       listQuery: {
         page: 1,
         limit: 20,
-        importance: undefined,
-        title: undefined,
-        type: undefined,
-        sort: '+id'
+        promotor: undefined,
+        search: undefined,
+        payment: [],
+        active: [],
+        sort: '-fac_fecha',
+        from: undefined,
+        to: undefined,
+        export: '',
+        countrows: ''
       },
-      importanceOptions: [1, 2, 3],
+      importanceOptions: [{ label: 'ID Ascending', key: '1' }, { label: 'ID Descending', key: '2' }, { label: 'Por confirmar', key: '2' }],
       calendarTypeOptions,
       sortOptions: [{ label: 'ID Ascending', key: '+id' }, { label: 'ID Descending', key: '-id' }],
       statusOptions: ['published', 'draft', 'deleted'],
@@ -223,23 +274,65 @@ export default {
         timestamp: [{ type: 'date', required: true, message: 'timestamp is required', trigger: 'change' }],
         title: [{ required: true, message: 'title is required', trigger: 'blur' }]
       },
-      downloadLoading: false
+      downloadLoading: false,
+      updaidDate: '',
+      promotorList:[],
+      showPaidInvoices: false
     }
   },
   created() {
-    this.getList()
+    this.getTotalRows();    
+    this.getPromotors();
+    this.getMinDate();
   },
   methods: {
+    getMinDate(){
+      var params = {
+        from: this.yearNow + '-' + this.monthNow + '-01',
+        to: this.yearNow + '-' + this.monthNow + '-' + this.dayLast
+      }
+      fetchFirstUnpaidDate(params).then(response => {
+        this.listQuery.from = JSON.parse(response.data)
+      })
+    },
+    getPromotors(){
+      // this.listLoading = true
+      fetchPromotorsList().then(response => {
+        this.promotorList = response.data
+
+        // Just to simulate the time of the request
+        /*setTimeout(() => {
+          this.listLoading = false
+        }, 1.5 * 1000) */
+      })
+    },
     getList() {
       this.listLoading = true
       fetchList(this.listQuery).then(response => {
-        this.list = response.data.items
-        this.total = response.data.total
+        this.list = response.data
+        //this.total = this.list.total //response.data.total
+        this.listLoading = false
 
         // Just to simulate the time of the request
-        setTimeout(() => {
+        /*setTimeout(() => {
           this.listLoading = false
-        }, 1.5 * 1000)
+        }, 1.5 * 1000) */
+      })
+    },
+    getTotalRows() {
+      this.listLoading = true
+      this.listQuery.countrows='1'
+      fetchList(this.listQuery).then(response => {
+        //this.list = response.data
+        this.total = parseInt(response.data)
+        this.listQuery.countrows=''
+        this.getList()
+        //this.listLoading = false
+
+        // Just to simulate the time of the request
+        /*setTimeout(() => {
+          this.listLoading = false
+        }, 1.5 * 1000) */
       })
     },
     handleFilter() {
@@ -248,22 +341,22 @@ export default {
     },
     handleModifyStatus(row, status) {
       this.$message({
-        message: '操作Success',
+        message: 'Éxito',
         type: 'success'
       })
       row.status = status
     },
     sortChange(data) {
       const { prop, order } = data
-      if (prop === 'id') {
+      if (prop === 'fac_key') {
         this.sortByID(order)
       }
     },
     sortByID(order) {
       if (order === 'ascending') {
-        this.listQuery.sort = '+id'
+        this.listQuery.sort = 'fac_key'
       } else {
-        this.listQuery.sort = '-id'
+        this.listQuery.sort = '-fac_key'
       }
       this.handleFilter()
     },
@@ -355,21 +448,36 @@ export default {
     },
     handleDownload() {
       this.downloadLoading = true
-      import('@/vendor/Export2Excel').then(excel => {
-        const tHeader = ['timestamp', 'title', 'type', 'importance', 'status']
-        const filterVal = ['timestamp', 'title', 'type', 'importance', 'status']
-        const data = this.formatJson(filterVal, this.list)
-        excel.export_json_to_excel({
-          header: tHeader,
-          data,
-          filename: 'table-list'
+      this.listQuery.export='1'
+      fetchList(this.listQuery).then(response => {
+        this.list = response.data
+        this.listQuery.export=''
+        //this.total = this.list.total //response.data.total
+        //this.listLoading = false
+
+        // Just to simulate the time of the request
+        /*setTimeout(() => {
+          this.listLoading = false
+        }, 1.5 * 1000) */
+
+        import('@/vendor/Export2Excel').then(excel => {
+          const tHeader = ['FACTURA', 'FECHA', 'CLIENTE','RFC', 'TOTAL', 'ESTADO']
+          const filterVal = ['fac_folio', 'fac_fecha', 'fac_receptornombre', 'fac_receptorrfc', 'fac_total', 'fac_pagada']
+          const data = this.formatJson(filterVal, this.list)
+          excel.export_json_to_excel({
+            header: tHeader,
+            data,
+            filename: 'facturas'
+          })
+          this.downloadLoading = false
         })
-        this.downloadLoading = false
       })
+
+      
     },
     formatJson(filterVal, jsonData) {
       return jsonData.map(v => filterVal.map(j => {
-        if (j === 'timestamp') {
+        if (j === 'fac_fecha') {
           return parseTime(v[j])
         } else {
           return v[j]

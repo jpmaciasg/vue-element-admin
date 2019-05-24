@@ -24,6 +24,27 @@ export function fetchList(query) {
   })
 }
 
+export function fetchPromotorsList() {
+  return request({
+    url: '/user/promotors',
+    method: 'get'
+  })
+}
+
+export function fetchFirstUnpaidDate() {
+  return request({
+    url: '/invoice/firstunpaiddate',
+    method: 'get'
+  })
+}
+
+export function fetchInvoice(id) {
+  return request({
+    url: '/invoice/' + id,
+    method: 'get'
+  })
+}
+
 export function fetchArticle(id) {
   return request({
     url: '/invoice/detail',
@@ -51,6 +72,14 @@ export function createArticle(data) {
 export function updateArticle(data) {
   return request({
     url: '/article/update',
+    method: 'post',
+    data
+  })
+}
+
+export function updateInvoice(id, data) {
+  return request({
+    url: '/invoice/update/',
     method: 'post',
     data
   })

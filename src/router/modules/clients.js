@@ -17,28 +17,28 @@ const clientRouter = {
       component: () => import('@/views/table/complex-table'),
       name: 'ComplexTable',
       meta: {
-        title: 'Complex Table',
+        title: 'Listado',
         roles: ['admin', 'operator', 'promotor', 'supervisor']
       }
     },
     {
-      path: 'dynamic-table',
+      path: 'add',
       component: () => import('@/views/table/dynamic-table/index'),
-      name: 'DynamicTable',
+      name: 'Agregar',
       meta: { title: 'Dynamic Table' }
     },
     {
-      path: 'drag-table',
+      path: 'import',
       component: () => import('@/views/table/drag-table'),
-      name: 'DragTable',
+      name: 'Importar',
       meta: { title: 'Drag Table' }
-    },
-    {
+    } /* ,
+     {
       path: 'inline-edit-table',
       component: () => import('@/views/table/inline-edit-table'),
       name: 'InlineEditTable',
       meta: { title: 'Inline Edit' }
-    }
+    } */
   ]
 }
 export default clientRouter
