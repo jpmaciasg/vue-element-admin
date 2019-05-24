@@ -6,23 +6,21 @@
         <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name+'('+item.key+')'" :value="item.key" />
       </el-select> -->
 
-      <el-date-picker v-model="listQuery.from" type="date" placeholder="Fecha inicial" class="filter-item"/>
-      <el-date-picker v-model="listQuery.to" type="date" placeholder="Fecha final" class="filter-item"/>
+      <el-date-picker v-model="listQuery.from" type="date" placeholder="Fecha inicial" class="filter-item" />
+      <el-date-picker v-model="listQuery.to" type="date" placeholder="Fecha final" class="filter-item" />
       <el-select v-model="listQuery.promotor" placeholder="Promotor" clearable style="width: 210px" class="filter-item">
-       <!--  <el-option key="0" label="-- Seleccionar --" value="" /> -->
+        <!--  <el-option key="0" label="-- Seleccionar --" value="" /> -->
         <el-option v-for="item in promotorList" :key="item.id" :label="item.first_name + ' ' + item.last_name" :value="item" />
       </el-select>
-      <br />
-      
+      <br>
+
       <span class="filter-item" style="font-weight: bold">Pagos: </span>
-<el-checkbox-group v-model="listQuery.payment" class="filter-item">
-      <el-checkbox label="Pagada" name="pay"></el-checkbox>
-      <el-checkbox label="Por confirmar" name="pay"></el-checkbox>
-      <el-checkbox label="No pagada" name="pay"></el-checkbox>
+      <el-checkbox-group v-model="listQuery.payment" class="filter-item">
+        <el-checkbox label="Pagada" name="pay" />
+        <el-checkbox label="Por confirmar" name="pay" />
+        <el-checkbox label="No pagada" name="pay" />
 
-    </el-checkbox-group>
-
-
+      </el-checkbox-group>
 
 <!--
       <el-radio-group v-model="listQuery.payment" class="filter-item"> Test
@@ -35,17 +33,17 @@
       &nbsp;&nbsp;&nbsp;<span class="filter-item" style="font-weight: bold">Estado: </span>
 
       <el-checkbox-group v-model="listQuery.active" class="filter-item">
-      <el-checkbox label="Activa" name="act" value="1"></el-checkbox>a
-      <el-checkbox label="Cancelada" name="act" value="0"></el-checkbox>b
-</el-checkbox-group>
-<!--
+        <el-checkbox label="Activa" name="act" value="1" />a
+        <el-checkbox label="Cancelada" name="act" value="0" />b
+      </el-checkbox-group>
+      <!--
     </el-checkbox-group>
       <el-radio-group v-model="listQuery.active" class="filter-item">
       <el-radio label="Activa"></el-radio>
       <el-radio label="Cancelada"></el-radio>
       <el-radio label="Omitir"></el-radio>
       </el-radio-group> -->
- <br />
+      <br>
 
       <!-- <el-select v-model="listQuery.sort" style="width: 140px" class="filter-item" @change="handleFilter">
         <el-option v-for="item in sortOptions" :key="item.key" :label="item.label" :value="item.key" />
@@ -59,7 +57,7 @@
       <el-button v-waves :loading="downloadLoading" class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">
         Exportar
       </el-button>
-      
+
     </div>
 
     <el-table
@@ -70,8 +68,8 @@
       fit
       highlight-current-row
       style="width: 100%;"
-      @sort-change="sortChange"
       show-summary
+      @sort-change="sortChange"
     >
       <el-table-column label="ID" prop="fac_key" sortable="custom" align="center" width="80">
         <template slot-scope="scope">
@@ -94,7 +92,7 @@
           <el-tag>{{ row.type | typeFilter }}</el-tag>
         </template> -->
         <template slot-scope="scope">
-          <span>{{ scope.row.fac_receptornombre }}<br />{{ scope.row.fac_receptornombre }}</span>
+          <span>{{ scope.row.fac_receptornombre }}<br>{{ scope.row.fac_receptornombre }}</span>
         </template>
       </el-table-column>
       <el-table-column label="Totales" width="110px" align="center">
@@ -276,17 +274,17 @@ export default {
       },
       downloadLoading: false,
       updaidDate: '',
-      promotorList:[],
+      promotorList: [],
       showPaidInvoices: false
     }
   },
   created() {
-    this.getTotalRows();    
-    this.getPromotors();
-    this.getMinDate();
+    this.getTotalRows()
+    this.getPromotors()
+    this.getMinDate()
   },
   methods: {
-    getMinDate(){
+    getMinDate() {
       var params = {
         from: this.yearNow + '-' + this.monthNow + '-01',
         to: this.yearNow + '-' + this.monthNow + '-' + this.dayLast
@@ -295,13 +293,13 @@ export default {
         this.listQuery.from = JSON.parse(response.data)
       })
     },
-    getPromotors(){
+    getPromotors() {
       // this.listLoading = true
       fetchPromotorsList().then(response => {
         this.promotorList = response.data
 
         // Just to simulate the time of the request
-        /*setTimeout(() => {
+        /* setTimeout(() => {
           this.listLoading = false
         }, 1.5 * 1000) */
       })
@@ -310,27 +308,27 @@ export default {
       this.listLoading = true
       fetchList(this.listQuery).then(response => {
         this.list = response.data
-        //this.total = this.list.total //response.data.total
+        // this.total = this.list.total //response.data.total
         this.listLoading = false
 
         // Just to simulate the time of the request
-        /*setTimeout(() => {
+        /* setTimeout(() => {
           this.listLoading = false
         }, 1.5 * 1000) */
       })
     },
     getTotalRows() {
       this.listLoading = true
-      this.listQuery.countrows='1'
+      this.listQuery.countrows = '1'
       fetchList(this.listQuery).then(response => {
-        //this.list = response.data
+        // this.list = response.data
         this.total = parseInt(response.data)
-        this.listQuery.countrows=''
+        this.listQuery.countrows = ''
         this.getList()
-        //this.listLoading = false
+        // this.listLoading = false
 
         // Just to simulate the time of the request
-        /*setTimeout(() => {
+        /* setTimeout(() => {
           this.listLoading = false
         }, 1.5 * 1000) */
       })
@@ -384,7 +382,7 @@ export default {
         if (valid) {
           this.temp.id = parseInt(Math.random() * 100) + 1024 // mock a id
           this.temp.author = 'vue-element-admin'
-          createArticle(this.temp).then(() => {
+          /*createArticle(this.temp).then(() => {
             this.list.unshift(this.temp)
             this.dialogFormVisible = false
             this.$notify({
@@ -393,7 +391,7 @@ export default {
               type: 'success',
               duration: 2000
             })
-          })
+          }) */
         }
       })
     },
@@ -448,20 +446,20 @@ export default {
     },
     handleDownload() {
       this.downloadLoading = true
-      this.listQuery.export='1'
+      this.listQuery.export = '1'
       fetchList(this.listQuery).then(response => {
         this.list = response.data
-        this.listQuery.export=''
-        //this.total = this.list.total //response.data.total
-        //this.listLoading = false
+        this.listQuery.export = ''
+        // this.total = this.list.total //response.data.total
+        // this.listLoading = false
 
         // Just to simulate the time of the request
-        /*setTimeout(() => {
+        /* setTimeout(() => {
           this.listLoading = false
         }, 1.5 * 1000) */
 
         import('@/vendor/Export2Excel').then(excel => {
-          const tHeader = ['FACTURA', 'FECHA', 'CLIENTE','RFC', 'TOTAL', 'ESTADO']
+          const tHeader = ['FACTURA', 'FECHA', 'CLIENTE', 'RFC', 'TOTAL', 'ESTADO']
           const filterVal = ['fac_folio', 'fac_fecha', 'fac_receptornombre', 'fac_receptorrfc', 'fac_total', 'fac_pagada']
           const data = this.formatJson(filterVal, this.list)
           excel.export_json_to_excel({
@@ -472,8 +470,6 @@ export default {
           this.downloadLoading = false
         })
       })
-
-      
     },
     formatJson(filterVal, jsonData) {
       return jsonData.map(v => filterVal.map(j => {
