@@ -23,6 +23,8 @@ from rest_framework.generics import UpdateAPIView, ListCreateAPIView
 from . import models 
 from drf_writable_nested import WritableNestedModelSerializer
 from django.db.models import Avg, Count, Min, Sum, Q
+from rest_framework.authtoken.models import Token
+import logging
 
 # Create your views here.
 class CreateUserAPIView(ListCreateAPIView):
@@ -282,6 +284,31 @@ class RoleAPIView(viewsets.ModelViewSet):
     
         return Response(serializer.data, status=status.HTTP_200_OK)
 '''
+class Logout(APIView):
+    permission_classes = (AllowAny,)
+    def post(self, request, format=None):
+        # simply delete the token to force a login
+        #if request.user :
+        #    request.user.auth_token.delete()
+        
+        return Response(status=status.HTTP_200_OK)
+
+class UserInfoAPIView(APIView):
+    #permission_classes = (AllowAny,)
+    permission_classes = (IsAuthenticated,)
+    
+    serializer_class=UserSerializer
+    def get(self, request, *args, **kwargs):
+
+        logger = logging.getLogger('restapi.users')
+
+        User =  get_user_model()
+        id = request.user.id 
+
+        #id= self.kwargs['id']
+        queryset=User.objects.get(id=id)
+        serializer = UserSerializer(queryset)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class UserSingleAPIView(APIView):
     permission_classes = (AllowAny,)

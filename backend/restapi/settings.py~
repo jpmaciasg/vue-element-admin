@@ -24,7 +24,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'k49)1gjrx_jd*3b(wksga1aw=$s901pds8t99kd8cm&txf*a$q'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False 
+DEBUG = True 
 
 #ALLOWED_HOSTS = ['fserver','fserver.localhost','192.168.1.230']
 ALLOWED_HOSTS = ['*']

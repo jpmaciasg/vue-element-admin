@@ -47,7 +47,7 @@ class InvoiceNoXmlSerializer(serializers.ModelSerializer):
  
     class Meta(object):
         model = Invoice
-        fields = ('fac_key','fac_serie','fac_folio', 'fac_emisorrfc', 'fac_emisornombre',
+        fields = ('fac_key','fac_serie','fac_folio', 
                   'fac_receptorrfc', 'fac_receptornombre', 'fac_total',
                   'fac_observaciones', 'fac_fechapago', 'fac_fecha',
                   'fac_cdate', 'fac_subtotal', 'fac_iva', 'fac_payments', 
@@ -55,6 +55,7 @@ class InvoiceNoXmlSerializer(serializers.ModelSerializer):
                   'fac_complemento', 'fac_idclient','fac_iduser')
 
         datatables_always_serialize = ('fac_key',)
+
 
 class InvoiceLogSerializer(serializers.ModelSerializer):
  

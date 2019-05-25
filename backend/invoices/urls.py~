@@ -15,7 +15,9 @@ from .views import (
     NewInvoiceLog,
     NewInvoiceReminder,
     NewInvoicePaymentHistory,
-    UpdateInvoiceAPIView
+    UpdateInvoiceAPIView,
+    InvoiceDebtAPIView,
+    FirstUnpaidInvoiceAPIView
     )
  
 urlpatterns = [
@@ -23,9 +25,11 @@ urlpatterns = [
     path('missing', MissingInvoiceAPIView.as_view()),
     path('list', InvoiceListingAPIView.as_view({'get': 'list'})),
     path('income', InvoiceIncomeAPIView.as_view()),
+    path('debt',InvoiceDebtAPIView.as_view()),
     path('count', InvoiceCountAPIView.as_view()),
     path('promotor_pie', InvoicePromotorPieAPIView.as_view({'get': 'get'})),
     path('firstunpaiddate', FirstUnpaidDateAPIView.as_view()),
+    path('firstunpaidinvoice', FirstUnpaidInvoiceAPIView.as_view()),
     path('log/<int:id>',InvoiceLogListingAPIView.as_view()),
     path('log',NewInvoiceLog.as_view()),
     path('reminder/<int:id>',InvoiceReminderListingAPIView.as_view()),

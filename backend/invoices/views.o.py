@@ -118,7 +118,7 @@ class InvoiceListingAPIView(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-    def search_queryset(self, fromDate, toDate, search, is1, is0, ps1, ps2, ps3, relatedUser, sessionProfile):
+    def search_queryset(self, fromDate, toDate, search, invoiceStatus, paymentStatus, relatedUser, sessionProfile):
 
         queryset = Invoice.objects.all()
 
@@ -129,49 +129,6 @@ class InvoiceListingAPIView(viewsets.ModelViewSet):
             if relatedUser != 0 :
                 queryset = queryset.filter(fac_iduser = relatedUser)
 
-            if ps1 > 0 or ps2 > 0 or ps3 > 0:
-                q_pay=Q()
-
-                if ps1 > 0:
-                    q_pay |= Q(fac_pagada = 1)
-                if ps2 > 0: 
-                    q_pay |= Q(fac_pagada = 2)
-
-                if ps3 > 0:
-                    q_pay |= Q(fac_pagada = 3)
-
-                queryset=queryset.filter( q_pay )
-
-            if is1 > 0 or is0 > 0:
-                q_act = Q()
-
-                if is1 > 0:
-                    q_act |= Q(fac_isactive = True)
-
-                if is0 > 0:
-                    q_act |= Q(fac_isactive = False)
-
-                queryset = queryset.filter( q_act )
-
-            if fromDate != None or toDate != None :
-                q_date= Q()
-
-                if fromDate != None:
-                    q_date &= Q(fac_fecha__gte=fromDate)
-
-                if toDate != None:
-                    q_date &= Q(fac_fecha__lte=toDate)
-
-                queryset = queryset.filter(q_date)
-
-            if search != '':
-                q_search = Q()
-
-                q_search |= Q(fac_folio__icontains = search)
-                q_search |= Q(fac_receptornombre__icontains = search)
-                q_search |= Q(fac_receptorrfc__icontains = search)
-
-                queryset = queryset.filter( q_search )
 
 
 
@@ -186,104 +143,124 @@ class InvoiceListingAPIView(viewsets.ModelViewSet):
         logger.info('Invoice listing')
 
         user=request.user
-        logger.info('user:')
-        logger.info(user)
         userrole=user.role_key
         logger.info('role')
         logger.info(userrole)
+
+        sort = request.GET.get('sort','-fac_fecha')
+        #pipe=sort.find('+')
+        ##order=''
+        #isprom=request.GET.get('isprom','')
+        #if pipe > 0:
+        #    order=sort[pipe+1:]
+        #   sort=sort[1:]
+
+        ##  if order.lower()=='desc':
+        ##        sort='-' + sort
+
+        ##else:
+        ##    sort='-fac_fecha'
+
+        logger.info('sort')
+        logger.info(sort)
+
+        #page = request.GET.get('page', '1')
+        page=1
+        #perpage= request.GET.get('per_page','50')
+        perpage=10
+        offset=(int(page)-1) * int(page)
+        total=int(perpage)*1
+        total=total+offset
 
 
         search=request.GET.get('search','')
         fromd=request.GET.get('from','')
         tod=request.GET.get('to','')
-        promotor=request.GET.get('promotor','')
-        paymentStatus1=request.GET.get('pay_1','')
-        paymentStatus2=request.GET.get('pay_2','')
-        paymentStatus3=request.GET.get('pay_3','')
+        promotorid=request.GET.get('promotorid','')
+        paid=request.GET.get('fac_pagada','')
 
-        activeStatus1=request.GET.get('act_1','')
-        activeStatus0=request.GET.get('act_0','')
-
-        countrows= request.GET.get('countrows','')
-        export = request.GET.get('export','')
-        currentPage= request.GET.get('page','1')
-        resultsPerPage = request.GET.get('limit','')
-        sort= request.GET.get('sort','-fac_fecha')
+        logger.info('search terms: search: ' + search + ', fromd: ' + fromd + ', tod: ' + tod + ', promotorid: ' + promotorid + ', paid: ' + paid)
 
         startdate=None
         enddate=None
+        isp=False
+
+        pid=0
+        if '' != promotorid:
+            pid=int(promotorid)
+
         
-        if '' != fromd:
-            startdate = datetime.strptime(fromd[0:10], '%Y-%m-%d')
-        if '' != tod:
-            enddate = datetime.strptime(tod[0:10], '%Y-%m-%d') + timedelta(minutes=1439)
 
-        act1=0
-        if '' != activeStatus1:
-            if activeStatus1=='true':
-                act1=1
-            else:
-                act1=0
+        if 3 == userrole.role_key :
+            isp=True
+            logger.info('User is promotor')
 
-        act0=0
-        if '' != activeStatus0:
-            if activeStatus0=='true':
-                act0=1
-            else:
-                act0=0
-
-        pay1=0
-        if '' != paymentStatus1:
-            if paymentStatus1=='true':
-                pay1=1
-            else:
-                pay1=0
-
-        pay2=0
-        if '' != paymentStatus2:
-            if paymentStatus2=='true':
-                pay2=1
-            else:
-                pay2=0
-
-        pay3=0
-        if '' != paymentStatus3:
-            if paymentStatus3=='true':
-                pay3=1
-            else:
-                pay3=0
-
-        prom=0
-        if promotor != '':
-            prom = int(promotor)
-
-        queryset=self.search_queryset(fromDate=startdate, toDate=enddate,search=search, is1=act1, is0=act0, ps1=pay1, ps2=pay2, ps3=pay3, relatedUser=prom, sessionProfile=userrole)
-
-        page = int(currentPage)
-        perpage = int(resultsPerPage)
-        offset=0
-        offset = (page -1) * perpage
-        total = 0
-        total = perpage
-        total = total + offset
-
-        #queryset=queryset.order_by(sort)[offset:total]
-
-        if countrows != '':
-            queryset = queryset.count()
-            if None == queryset:
-                result=0
-            else:
-                result = queryset
-
-            return Response(json.dumps(result), status=status.HTTP_200_OK)
+        #queryset = Invoice.objects.all()
+        queryset = self.search_queryset(fromDate=None, toDate=None, search='', invoiceStatus=0, paymentStatus=2, sessionProfile=userrole, relatedUser=0 )
+        #queryset = queryset.filter(fac_isactive=True)
+        if(True==isp):
+            queryset=queryset.filter(Q(fac_pagada=2))
+            logger.info('Lookup fac_pagada=2')
         else:
-            if export != '':
-                queryset = queryset.order_by(sort)
-            else:
-                queryset = queryset.order_by(sort)[offset:total]
 
-            serializer = InvoiceNoXmlSerializer(queryset, many=True)
+        #if 1 != userrole.role_key :
+        #    queryset=queryset.filter( ~Q(fac_pagada =3) )
+
+            if '' != paid and 'true' == paid:
+                queryset=queryset.filter( Q(fac_pagada=1) | Q(fac_pagada=2) | Q(fac_pagada=3))
+                logger.info('Lookup fac_pagada=1 or 2 or 3')
+            else:
+                queryset=queryset.filter( ~Q(fac_pagada=1) )
+                logger.info('Lookup fac_pagada != 1')
+
+        if pid > 0:
+            queryset = queryset.filter(fac_iduser=pid)
+            logger.info('Lookup fac_iduser=pid')
+            #if True == isp:
+                #queryset=queryset.filter( ~Q(fac_pagada =3) & ~Q(fac_pagada=1))
+
+        if '' != search:
+            queryset=queryset.filter(Q(fac_receptorrfc__icontains=search)| Q(fac_folio__icontains=search)| Q(fac_receptornombre__icontains=search) )
+            logger.info('Lookup search text: ' + search)
+
+        q_dates = Q()
+        if '' != fromd:
+            startdate = datetime.strptime(fromd, '%Y-%m-%d')
+        if '' != tod:
+            enddate = datetime.strptime(tod, '%Y-%m-%d') + timedelta(minutes=1439)
+
+        #logger.debug(enddate)
+        
+
+        if startdate != None and enddate != None:
+            q_dates &= Q(fac_fecha__gte=startdate) 
+            q_dates &= Q(fac_fecha__lte=enddate)
+            queryset = queryset.filter(q_dates)
+            logger.info('Lookup between dates')
+        
+        elif startdate == None and enddate != None:
+            q_dates=Q(fac_fecha__lte=enddate)
+            logger.info('Lookup less than enddate' + str(enddate) )
+
+        elif enddate == None and startdate != None :
+            q_dates=Q(fac_fecha__gte=startdate)
+            logger.info('Lookup more than startdate' + str(startdate) )
+        
+        #tags = ['tag1', 'tag2', 'tag3']
+        #q_objects = Q() # Create an empty Q object to start with
+        #for t in tags:
+        #q_objects |= Q(tags__tag__contains=t)
+        #.filter(q_objects)
+        #queryset = Invoice.objects.all()
+
+        #if q_dates:
+        #    queryset = queryset.filter(q_dates) #order_by(sort)[offset:total]
+        
+        #logger.debug(queryset.query)
+        #print (queryset.query)
+        
+        queryset=queryset.order_by(sort)[offset:total]
+        serializer = InvoiceNoXmlSerializer(queryset, many=True)
         
         return Response(serializer.data)
 

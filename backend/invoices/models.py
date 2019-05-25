@@ -42,7 +42,7 @@ class Invoice (models.Model):
         indexes = [
             models.Index(fields=['fac_idclient','fac_iduser']),
         ]
-    
+
     def missing_invoices(self):
         r = connection.cursor()
 
@@ -74,12 +74,12 @@ class Invoice (models.Model):
 
         #with open(f2) as f2f:
         #    xmlcontent = f2f.read()
-        print("antes")
+        #print("antes")
         xmlstr=filepath.read()
         u=xmlstr.decode("utf-8-sig")
         xmlstr=u.encode("utf-8")
         xmlstr=xmlstr.decode("utf-8")
-        print(xmlstr)
+        #print(xmlstr)
         root=ET.fromstring(xmlstr)
         nsmap['cfdi']='http://www.sat.gob.mx/cfd/3'
         #tree=ET.parse(filepath)
@@ -125,7 +125,7 @@ class Invoice (models.Model):
 
         for child in root:
             tag=self.gettag('cfdi',child.tag, nsmap)
-            print(tag)
+            #print(tag)
             if tag =='Emisor':
                 inv['fac_emisorrfc']=child.get(atEmisorRfc)
                 inv['fac_emisornombre']=child.get(atEmisorNombre)
@@ -137,7 +137,7 @@ class Invoice (models.Model):
         inv['fac_idclient']=None
         inv['fac_iduser']=None
 
-        print(inv)
+        #print(inv)
         
         if Contact.objects.filter(contact_taxid=inv['fac_receptorrfc']).exists():
             client=Contact.objects.get(contact_taxid=inv['fac_receptorrfc'])

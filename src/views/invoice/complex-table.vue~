@@ -16,9 +16,9 @@
 
       <span class="filter-item" style="font-weight: bold">Pagos: </span>
       <!-- <el-checkbox-group class="filter-item"> -->
-      <el-checkbox v-model="listQuery.pay_1" label="Pagada" class="filter-item" />
-      <el-checkbox v-model="listQuery.pay_3" label="Por confirmar" class="filter-item" />
-      <el-checkbox v-model="listQuery.pay_2" label="No pagada" class="filter-item" />
+        <el-checkbox label="Pagada" v-model="listQuery.pay_1" class="filter-item"/>
+        <el-checkbox label="Por confirmar" v-model="listQuery.pay_3" class="filter-item"/>
+        <el-checkbox label="No pagada" v-model="listQuery.pay_2" class="filter-item"/>
 
       <!-- </el-checkbox-group> -->
 
@@ -31,11 +31,11 @@
       </el-radio-group> -->
 
       &nbsp;&nbsp;&nbsp;<span class="filter-item" style="font-weight: bold">Estado: </span>
-      <!-- <el-checkbox-group class="filter-item"> -->
-      <el-checkbox v-model="listQuery.act_1" label="Activa" class="filter-item" />
-      <el-checkbox v-model="listQuery.act_0" label="Cancelada" class="filter-item" />
-      <!--  </el-checkbox-group> -->
-      <!--
+	<!-- <el-checkbox-group class="filter-item"> -->
+        <el-checkbox label="Activa" v-model="listQuery.act_1" class="filter-item"/>
+        <el-checkbox label="Cancelada" v-model="listQuery.act_0" class="filter-item"/>
+    <!--  </el-checkbox-group> -->
+<!--
     </el-checkbox-group>
       <el-radio-group v-model="listQuery.active" class="filter-item">
       <el-radio label="Activa"></el-radio>
@@ -96,7 +96,7 @@
       </el-table-column>
       <el-table-column label="Total" width="110px" align="center">
         <template slot-scope="scope">
-          <span>Total: {{ scope.row.fac_total }}</span><br><span>Pagado: {{ scope.row.fac_pagado }}</span><br><span>Deuda: {{ scope.row.fac_total - scope.row.fac_pagado }}</span>
+  <span>Total: {{ scope.row.fac_total }}</span><br /><span>Pagado: {{ scope.row.fac_pagado }}</span><br /><span>Deuda: {{ scope.row.fac_total - scope.row.fac_pagado }}</span>
         </template>
       </el-table-column>
       <!-- <el-table-column v-if="showReviewer" label="Reviewer" width="110px" align="center">
@@ -140,13 +140,8 @@
       </el-table-column>
     </el-table>
 
-    <pagination
-      v-show="total>0"
-      :total="total"
-      :page.sync="listQuery.page"
-      :limit.sync="listQuery.limit"
-      @pagination="getList"
-    />
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page"
+:limit.sync="listQuery.limit" @pagination="getList" />
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
@@ -228,12 +223,12 @@ export default {
       return statusMap[status]
     },
     statusText(status) {
-      const statusTextMap = {
-        '1': 'Pagada',
-        '2': 'No pagada',
-        '3': 'Confirmar'
-      }
-      return statusTextMap[status]
+	const statusTextMap = {
+		'1': 'Pagada',
+		'2': 'No pagada',
+		'3': 'Confirmar'
+	}
+	return statusTextMap[status]
     },
     typeFilter(type) {
       return calendarTypeKeyValue[type]
@@ -251,10 +246,10 @@ export default {
         promotor: undefined,
         search: '',
         pay_1: false,
-        pay_2: true,
-        pay_3: true,
+	pay_2: true,
+	pay_3: true,
         act_1: true,
-        act_0: false,
+	act_0: false,
         sort: '-fac_fecha',
         from: undefined,
         to: undefined,
@@ -398,7 +393,7 @@ export default {
         if (valid) {
           this.temp.id = parseInt(Math.random() * 100) + 1024 // mock a id
           this.temp.author = 'vue-element-admin'
-          /* createArticle(this.temp).then(() => {
+          /*createArticle(this.temp).then(() => {
             this.list.unshift(this.temp)
             this.dialogFormVisible = false
             this.$notify({
@@ -464,7 +459,7 @@ export default {
       this.downloadLoading = true
       this.listQuery.export = '1'
       fetchList(this.listQuery).then(response => {
-        var dlist = response.data
+        this.list = response.data
         this.listQuery.export = ''
         // this.total = this.list.total //response.data.total
         // this.listLoading = false
@@ -477,7 +472,7 @@ export default {
         import('@/vendor/Export2Excel').then(excel => {
           const tHeader = ['FACTURA', 'FECHA', 'CLIENTE', 'RFC', 'TOTAL', 'ESTADO']
           const filterVal = ['fac_folio', 'fac_fecha', 'fac_receptornombre', 'fac_receptorrfc', 'fac_total', 'fac_pagada']
-          const data = this.formatJson(filterVal, dlist)
+          const data = this.formatJson(filterVal, this.list)
           excel.export_json_to_excel({
             header: tHeader,
             data,
