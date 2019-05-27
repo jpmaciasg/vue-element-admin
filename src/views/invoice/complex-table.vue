@@ -43,6 +43,12 @@
       <el-radio label="Omitir"></el-radio>
       </el-radio-group> -->
       <br>
+      <div v-if="currentRole=='admin' || currentRole == 'executive'">
+        Fecha pago:
+        <el-date-picker v-model="listQuery.fromp" type="date" placeholder="Fecha inicial" class="filter-item" />
+        <el-date-picker v-model="listQuery.top" type="date" placeholder="Fecha final" class="filter-item" />
+        <br>
+      </div>
 
       <!-- <el-select v-model="listQuery.sort" style="width: 140px" class="filter-item" @change="handleFilter">
         <el-option v-for="item in sortOptions" :key="item.key" :label="item.label" :value="item.key" />
@@ -200,6 +206,7 @@ import { fetchList, fetchPv, updateArticle, fetchFirstUnpaidDate, fetchPromotors
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
+import { mapGetters } from 'vuex'
 
 const calendarTypeOptions = [
   { key: 'CN', display_name: 'China' },
@@ -258,6 +265,8 @@ export default {
         sort: '-fac_fecha',
         from: undefined,
         to: undefined,
+        fromp: undefined,
+        top: undefined,
         export: '',
         countrows: ''
       },
@@ -291,13 +300,31 @@ export default {
       downloadLoading: false,
       updaidDate: '',
       promotorList: [],
-      showPaidInvoices: false
+      showPaidInvoices: false,
+      currentRole: ''
     }
   },
   created() {
     this.getTotalRows()
     this.getPromotors()
     this.getMinDate()
+
+    if (this.roles.includes('admin')) {
+      this.currentRole = 'admin'
+    }
+    if (this.roles.includes('operator')) {
+      this.currentRole = 'operator'
+    }
+    if (this.roles.includes('promotor')) {
+      this.currentRole = 'promotor'
+    }
+    if (this.roles.includes('executive')) {
+      this.currentRole = 'executive'
+    }
+    if (this.roles.includes('supervisor')) {
+      this.currentRole = 'supervisor'
+    }
+    console.log(this.currentRole)
   },
   methods: {
     getMinDate() {
@@ -496,6 +523,11 @@ export default {
         }
       }))
     }
+  },
+  computed: {
+    ...mapGetters([
+      'roles'
+    ])
   }
 }
 </script>
