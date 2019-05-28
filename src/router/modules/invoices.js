@@ -18,7 +18,7 @@ const invoiceRouter = {
       name: 'ComplexTable',
       meta: {
         title: 'Listado',
-        roles: ['admin', 'operator', 'promotor', 'supervisor']
+        roles: ['admin', 'operator', 'promotor', 'supervisor', 'executive']
       }
     },
     {
@@ -32,6 +32,17 @@ const invoiceRouter = {
       component: () => import('@/views/invoice/drag-table'),
       name: 'DragTable',
       meta: { title: 'Faltantes' }
+    },
+    {
+      path: 'edit/:id(\\d+)',
+      component: () => import('@/views/invoice/edit'),
+      name: 'EditInvoice',
+      meta: {
+        title: 'Ver factura',
+        noCache: true,
+        activeMenu: '/invoice/list'
+      },
+      hidden: true
     }
   ]
 }

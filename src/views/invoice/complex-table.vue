@@ -129,9 +129,14 @@
       </el-table-column>
       <el-table-column label=" " align="center" width="100" class-name="small-padding fixed-width">
         <template slot-scope="{row}">
-          <el-button type="primary" size="mini" @click="handleUpdate(row)">
+          <router-link :to="'/invoices/edit/'+row.fac_key">
+            <el-button type="primary" size="small" icon="el-icon-edit">
+              Ver
+            </el-button>
+          </router-link>
+          <!-- <el-button type="primary" size="mini" @click="handleUpdate(row)">
             Ver
-          </el-button>
+          </el-button> -->
           <!-- <el-button v-if="row.status!='1'" size="mini" type="success" @click="handleModifyStatus(row,'published')">
             Pagada
           </el-button>
