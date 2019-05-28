@@ -73,7 +73,6 @@
       fit
       highlight-current-row
       style="width: 100%;"
-      show-summary
       @sort-change="sortChange"
     >
       <el-table-column label="ID" prop="fac_key" sortable="custom" align="center" width="80">
@@ -102,7 +101,7 @@
       </el-table-column>
       <el-table-column label="Total" width="110px" align="center">
         <template slot-scope="scope">
-          <span>Total: {{ scope.row.fac_total }}</span><br><span>Pagado: {{ scope.row.fac_pagado }}</span><br><span>Deuda: {{ scope.row.fac_total - scope.row.fac_pagado }}</span>
+          <span>Total: {{ scope.row.fac_total }}</span><br><span>Pagado: {{ scope.row.fac_payments }}</span><br><span>Deuda: {{ scope.row.fac_debt }}</span>
         </template>
       </el-table-column>
       <!-- <el-table-column v-if="showReviewer" label="Reviewer" width="110px" align="center">
@@ -502,8 +501,8 @@ export default {
         }, 1.5 * 1000) */
 
         import('@/vendor/Export2Excel').then(excel => {
-          const tHeader = ['FACTURA', 'FECHA', 'CLIENTE', 'RFC', 'TOTAL', 'ESTADO']
-          const filterVal = ['fac_folio', 'fac_fecha', 'fac_receptornombre', 'fac_receptorrfc', 'fac_total', 'fac_pagada']
+          const tHeader = ['FACTURA', 'FECHA', 'CLIENTE', 'RFC', 'TOTAL', 'PAGADO', 'DEUDA', 'ESTATUS']
+          const filterVal = ['fac_folio', 'fac_fecha', 'fac_receptornombre', 'fac_receptorrfc', 'fac_total', 'fac_payments', 'fac_debt', 'fac_pagadatext']
           const data = this.formatJson(filterVal, dlist)
           excel.export_json_to_excel({
             header: tHeader,
