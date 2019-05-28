@@ -44,6 +44,8 @@ class InvoiceNoXmlSerializer(serializers.ModelSerializer):
  
     #date_joined = serializers.ReadOnlyField()
     fac_key = serializers.IntegerField(read_only=True)
+    fac_debt = serializers.ReadOnlyField()
+    fac_pagadatext=serializers.ReadOnlyField()
  
     class Meta(object):
         model = Invoice
@@ -51,7 +53,7 @@ class InvoiceNoXmlSerializer(serializers.ModelSerializer):
                   'fac_receptorrfc', 'fac_receptornombre', 'fac_total',
                   'fac_observaciones', 'fac_fechapago', 'fac_fecha',
                   'fac_cdate', 'fac_subtotal', 'fac_iva', 'fac_payments', 
-                  'fac_isactive', 'fac_contact', 'fac_lastreminder', 'fac_pagada',
+                  'fac_isactive', 'fac_contact', 'fac_lastreminder', 'fac_pagada', 'fac_debt','fac_pagadatext',
                   'fac_complemento', 'fac_idclient','fac_iduser')
 
         datatables_always_serialize = ('fac_key',)

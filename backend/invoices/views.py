@@ -17,7 +17,6 @@ from django.conf import settings
 from django.contrib.auth.signals import user_logged_in
 #from django.contrib.auth.hashers import make_password
 from rest_framework import viewsets
-from django.shortcuts import render
 from rest_framework.pagination import PageNumberPagination
 import simplejson as json
 from .models import Invoice, InvoiceLog, InvoiceReminders, InvoicePaymentHistory
@@ -29,7 +28,7 @@ from rest_framework.generics import UpdateAPIView, ListCreateAPIView
 import logging
 from rest_framework.authtoken.models import Token
 from users.models import User, Role
-
+from .search import search_queryset 
 # Create your views here.
 
 class UpdateInvoiceAPIView(UpdateAPIView):
@@ -118,67 +117,6 @@ class InvoiceListingAPIView(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-    def search_queryset(self, fromDate, toDate, search, is1, is0, ps1, ps2, ps3, relatedUser, sessionProfile):
-
-        queryset = Invoice.objects.all()
-
-        # Specific search for Promotors
-        if sessionProfile == 3 :
-            queryset = queryset.filter(fac_isactive= True, fac_pagada=2, fac_iduser=relatedUser)
-        else:
-            if relatedUser != 0 :
-                queryset = queryset.filter(fac_iduser = relatedUser)
-
-            if ps1 > 0 or ps2 > 0 or ps3 > 0:
-                q_pay=Q()
-
-                if ps1 > 0:
-                    q_pay |= Q(fac_pagada = 1)
-                if ps2 > 0: 
-                    q_pay |= Q(fac_pagada = 2)
-
-                if ps3 > 0:
-                    q_pay |= Q(fac_pagada = 3)
-
-                queryset=queryset.filter( q_pay )
-
-            if is1 > 0 or is0 > 0:
-                q_act = Q()
-
-                if is1 > 0:
-                    q_act |= Q(fac_isactive = True)
-
-                if is0 > 0:
-                    q_act |= Q(fac_isactive = False)
-
-                queryset = queryset.filter( q_act )
-
-            if fromDate != None or toDate != None :
-                q_date= Q()
-
-                if fromDate != None:
-                    q_date &= Q(fac_fecha__gte=fromDate)
-
-                if toDate != None:
-                    q_date &= Q(fac_fecha__lte=toDate)
-
-                queryset = queryset.filter(q_date)
-
-            if search != '':
-                q_search = Q()
-
-                q_search |= Q(fac_folio__icontains = search)
-                q_search |= Q(fac_receptornombre__icontains = search)
-                q_search |= Q(fac_receptorrfc__icontains = search)
-
-                queryset = queryset.filter( q_search )
-
-
-
-        return queryset
-    
-
-
     def list(self, request):
         #user = Token.objects.get(key='token string').user
 
@@ -196,6 +134,8 @@ class InvoiceListingAPIView(viewsets.ModelViewSet):
         search=request.GET.get('search','')
         fromd=request.GET.get('from','')
         tod=request.GET.get('to','')
+        fromdp=request.GET.get('fromp','')
+        todp=request.GET.get('top','')
         promotor=request.GET.get('promotor','')
         paymentStatus1=request.GET.get('pay_1','')
         paymentStatus2=request.GET.get('pay_2','')
@@ -212,11 +152,18 @@ class InvoiceListingAPIView(viewsets.ModelViewSet):
 
         startdate=None
         enddate=None
+        startdatep=None
+        enddatep=None
         
         if '' != fromd:
             startdate = datetime.strptime(fromd[0:10], '%Y-%m-%d')
         if '' != tod:
             enddate = datetime.strptime(tod[0:10], '%Y-%m-%d') + timedelta(minutes=1439)
+
+        if '' != fromdp:
+            startdatep = datetime.strptime(fromdp[0:10], '%Y-%m-%d')
+        if '' != todp:
+            enddatep = datetime.strptime(todp[0:10], '%Y-%m-%d')
 
         act1=0
         if '' != activeStatus1:
@@ -257,7 +204,7 @@ class InvoiceListingAPIView(viewsets.ModelViewSet):
         if promotor != '':
             prom = int(promotor)
 
-        queryset=self.search_queryset(fromDate=startdate, toDate=enddate,search=search, is1=act1, is0=act0, ps1=pay1, ps2=pay2, ps3=pay3, relatedUser=prom, sessionProfile=userrole)
+        queryset=search_queryset(fromDate=startdate, toDate=enddate,search=search, is1=act1, is0=act0, ps1=pay1, ps2=pay2, ps3=pay3, relatedUser=prom, sessionProfile=userrole, fromDateP=startdatep, toDateP=enddatep)
 
         page = int(currentPage)
         perpage = int(resultsPerPage)
@@ -282,7 +229,8 @@ class InvoiceListingAPIView(viewsets.ModelViewSet):
                 queryset = queryset.order_by(sort)
             else:
                 queryset = queryset.order_by(sort)[offset:total]
-
+            
+            logger.info(queryset.query)
             serializer = InvoiceNoXmlSerializer(queryset, many=True)
         
         return Response(serializer.data)
@@ -339,16 +287,35 @@ class InvoiceIncomeAPIView(APIView):
         # can be JSONified and sent to the client.
         #serializer = self.serializer_class(request.user)
     
-        fromDate = datetime.strptime(request.GET.get('from'),'%Y-%m-%d')
-        toDate = datetime.strptime(request.GET.get('to'),'%Y-%m-%d')
+        fromd=request.GET.get('from','')
+        tod=request.GET.get('to','')
 
-        i=Invoice.objects.filter(fac_fechapago__gte=fromDate, fac_fechapago__lte=toDate+timedelta(minutes=1439), fac_pagada=1, fac_isactive=True).aggregate(s=Sum('fac_total'))
-        income=i['s']
-        if None == income:
-            result=0
+        startdate=None
+        enddate=None
+       
+        if '' != fromd:
+            startdate = datetime.strptime(fromd[0:10], '%Y-%m-%d')
+        if '' != tod:
+            enddate = datetime.strptime(tod[0:10], '%Y-%m-%d') + timedelta(minutes=1439)
+
+        queryset=search_queryset(fromDate=startdate, toDate=enddate,search='', is1=1, is0=0, ps1=1, ps2=0, ps3=0, relatedUser=0, sessionProfile=0, fromDateP=None, toDateP=None)
+
+        queryset = queryset.aggregate(s=Sum('fac_total'))
+        result = queryset['s']
+        r=0
+        if None == result:
+            r =0
         else:
-            result=income
-        return Response(json.dumps(result), status=status.HTTP_200_OK)
+            r = result
+
+        return Response(json.dumps(r), status=status.HTTP_200_OK)
+        #i=Invoice.objects.filter(fac_fechapago__gte=fromDate, fac_fechapago__lte=toDate+timedelta(minutes=1439), fac_pagada=1, fac_isactive=True).aggregate(s=Sum('fac_total'))
+        #income=i['s']
+        #if None == income:
+        #    result=0
+        #else:
+        #    result=income
+        #return Response(json.dumps(result), status=status.HTTP_200_OK)
 
 class InvoiceCountAPIView(APIView):
     # Allow only authenticated users to access this url
@@ -360,17 +327,38 @@ class InvoiceCountAPIView(APIView):
         # can be JSONified and sent to the client.
         #serializer = self.serializer_class(request.user)
     
-        fromDate = datetime.strptime(request.GET.get('from'),'%Y-%m-%d')
-        toDate = datetime.strptime(request.GET.get('to'),'%Y-%m-%d')
+        #fromDate = datetime.strptime(request.GET.get('from'),'%Y-%m-%d')
+        #toDate = datetime.strptime(request.GET.get('to'),'%Y-%m-%d')
+        fromd=request.GET.get('from','')
+        tod=request.GET.get('to','')
 
-        i=Invoice.objects.filter(fac_cdate__gte=fromDate, fac_cdate__lte=toDate+timedelta(minutes=1439)).count()
+        startdate=None
+        enddate=None
+       
+        if '' != fromd:
+            startdate = datetime.strptime(fromd[0:10], '%Y-%m-%d')
+        if '' != tod:
+            enddate = datetime.strptime(tod[0:10], '%Y-%m-%d') + timedelta(minutes=1439)
+
+        queryset=search_queryset(fromDate=startdate, toDate=enddate,search='', is1=1, is0=0, ps1=0, ps2=0, ps3=0, relatedUser=0, sessionProfile=0, fromDateP=None, toDateP=None) 
+        #i=Invoice.objects.filter(fac_cdate__gte=fromDate, fac_cdate__lte=toDate+timedelta(minutes=1439)).count()
         #print(i)
-        #income=i['fac_total']
-        if None == i:
-            result=0
+        #income=i['fac_total']i
+
+        queryset= queryset.count()
+
+        #if None == i:
+        #    result=0
+        #else:
+        #    result=i
+        
+        if None == queryset:
+            result =0
         else:
-            result=i
-        return Response(json.dumps(result), status=status.HTTP_200_OK)
+            result = queryset
+
+        return Response(json.dumps(result), status=status.HTTP_200_OK) 
+        
 
 class FirstUnpaidDateAPIView(APIView):
     # Allow only authenticated users to access this url

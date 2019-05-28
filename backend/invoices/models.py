@@ -35,6 +35,24 @@ class Invoice (models.Model):
     #fac_iduser= models.IntegerField(null = True, default=0)
     fac_iduser=models.ForeignKey(User, to_field='id', db_column = 'fac_iduser', on_delete = '', null=True, blank=True)
 
+    @property
+    def fac_debt(self):
+        return self.fac_total - self.fac_payments
+
+    @property
+    def fac_pagadatext(self):
+        ret=''
+        if self.fac_pagada==1:
+            ret='PAGADA'
+        elif self.fac_pagada==2:
+            ret='NO PAGADA'
+        elif self.fac_pagada==3:
+            ret='CONFIRMAR'
+
+        return ret
+
+
+
     class Meta:
         managed = False
         db_table = 'cbr_facturas'
