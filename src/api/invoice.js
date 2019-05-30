@@ -47,7 +47,7 @@ export function fetchInvoice(id) {
 
 export function fetchPaymentsHistoryList(id) {
   return request({
-    url: 'invoice/history/'+id,
+    url: 'invoice/history/' + id,
     method: 'get'
   })
 }
@@ -86,7 +86,7 @@ export function updateArticle(data) {
 
 export function updateInvoice(id, data) {
   return request({
-    url: '/invoice/update/'+id,
+    url: '/invoice/update/' + id,
     method: 'put',
     data
   })

@@ -5,8 +5,8 @@
       <!-- <el-select v-model="listQuery.type" placeholder="Type" clearable class="filter-item" style="width: 130px">
         <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name+'('+item.key+')'" :value="item.key" />
       </el-select> -->
-<span style="font-size:12px;" class="filter-item">(Deuda más antigua: {{unpaidDate}})</span>
-      <el-date-picker v-model="listQuery.from" type="date" placeholder="Fecha inicial" class="filter-item" /> 
+      <span style="font-size:12px;" class="filter-item">(Deuda más antigua: {{ unpaidDate }})</span>
+      <el-date-picker v-model="listQuery.from" type="date" placeholder="Fecha inicial" class="filter-item" />
       <el-date-picker v-model="listQuery.to" type="date" placeholder="Fecha final" class="filter-item" />
       <el-select v-model="listQuery.promotor" placeholder="Promotor" clearable style="width: 210px" class="filter-item">
         <!--  <el-option key="0" label="-- Seleccionar --" value="" /> -->
@@ -62,7 +62,7 @@
       <el-button v-waves :loading="downloadLoading" class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">
         Exportar
       </el-button>
-      <el-button v-waves :loading="downloadLoading" class="filter-item" type="primary"  @click="handleReset">
+      <el-button v-waves :loading="downloadLoading" class="filter-item" type="primary" @click="handleReset">
         Borrar filtros
       </el-button>
 
@@ -211,7 +211,7 @@
 <script>
 import { fetchList, fetchPv, updateArticle, fetchFirstUnpaidDate, fetchPromotorsList } from '@/api/invoice'
 import waves from '@/directive/waves' // waves directive
-import { parseTime , parseMoney } from '@/utils'
+import { parseTime, parseMoney } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 import { mapGetters } from 'vuex'
 
@@ -312,7 +312,7 @@ export default {
     }
   },
   created() {
-    //return this.$store.state.tagsView.cachedViews
+    // return this.$store.state.tagsView.cachedViews
     this.getTotalRows()
     this.getPromotors()
     this.getMinDate()
@@ -342,7 +342,7 @@ export default {
       }
       fetchFirstUnpaidDate(params).then(response => {
         this.listQuery.from = JSON.parse(response.data)
-        this.unpaidDate=this.listQuery.from 
+        this.unpaidDate = this.listQuery.from
       })
     },
     getPromotors() {
@@ -386,7 +386,6 @@ export default {
       })
     },
     handleReset() {
-
       var r = {
         page: 1,
         limit: 20,
@@ -405,8 +404,8 @@ export default {
         export: '',
         countrows: ''
       }
-      this.listQuery=r
-      //this.listQuery.page = 1
+      this.listQuery = r
+      // this.listQuery.page = 1
       this.getTotalRows()
     },
     handleFilter() {

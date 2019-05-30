@@ -10,7 +10,7 @@ export function fetchList(query) {
 
 export function fetchContact(id) {
   return request({
-    url: '/contact/'+id,
+    url: '/contact/' + id,
     method: 'get'
   })
 }
@@ -33,7 +33,7 @@ export function createArticle(data) {
 
 export function updateContact(id, data) {
   return request({
-    url: '/contact/update/'+id,
+    url: '/contact/update/' + id,
     method: 'put',
     data
   })
