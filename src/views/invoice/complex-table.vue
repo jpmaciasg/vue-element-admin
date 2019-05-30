@@ -5,8 +5,8 @@
       <!-- <el-select v-model="listQuery.type" placeholder="Type" clearable class="filter-item" style="width: 130px">
         <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name+'('+item.key+')'" :value="item.key" />
       </el-select> -->
-
-      <el-date-picker v-model="listQuery.from" type="date" placeholder="Fecha inicial" class="filter-item" />
+<span style="font-size:12px;" class="filter-item">(Deuda más antigua: {{unpaidDate}})</span>
+      <el-date-picker v-model="listQuery.from" type="date" placeholder="Fecha inicial" class="filter-item" /> 
       <el-date-picker v-model="listQuery.to" type="date" placeholder="Fecha final" class="filter-item" />
       <el-select v-model="listQuery.promotor" placeholder="Promotor" clearable style="width: 210px" class="filter-item">
         <!--  <el-option key="0" label="-- Seleccionar --" value="" /> -->
@@ -44,7 +44,7 @@
       </el-radio-group> -->
       <br>
       <div v-if="currentRole=='admin' || currentRole == 'executive'">
-        Fecha pago:
+        <span style="font-size:12px;" class="filter-item">Fecha pago:</span>
         <el-date-picker v-model="listQuery.fromp" type="date" placeholder="Fecha inicial" class="filter-item" />
         <el-date-picker v-model="listQuery.top" type="date" placeholder="Fecha final" class="filter-item" />
         <br>
@@ -61,6 +61,9 @@
       </el-button> -->
       <el-button v-waves :loading="downloadLoading" class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">
         Exportar
+      </el-button>
+      <el-button v-waves :loading="downloadLoading" class="filter-item" type="primary"  @click="handleReset">
+        Borrar filtros
       </el-button>
 
     </div>
@@ -90,7 +93,7 @@
           <span>{{ scope.row.fac_fecha | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="Cliente" min-width="250px">
+      <el-table-column label="Cliente" min-width="200px">
         <!-- <template slot-scope="{row}">
           <span class="link-type" @click="handleUpdate(row)">{{ row.fac_receptornombre }}</span>
           <el-tag>{{ row.type | typeFilter }}</el-tag>
@@ -99,9 +102,9 @@
           <span>{{ scope.row.fac_receptornombre }}<br>{{ scope.row.fac_receptorrfc }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="Total" width="110px" align="center">
+      <el-table-column label="Total" width="120px" align="center">
         <template slot-scope="scope">
-          <span>Total: {{ scope.row.fac_total }}</span><br><span>Pagado: {{ scope.row.fac_payments }}</span><br><span>Deuda: {{ scope.row.fac_debt }}</span>
+          <span>Total: {{ scope.row.fac_total | parseMoney }}</span><br><span>Pagado: {{ scope.row.fac_payments }}</span><br><span>Deuda: {{ scope.row.fac_debt }}</span>
         </template>
       </el-table-column>
       <!-- <el-table-column v-if="showReviewer" label="Reviewer" width="110px" align="center">
@@ -208,7 +211,7 @@
 <script>
 import { fetchList, fetchPv, updateArticle, fetchFirstUnpaidDate, fetchPromotorsList } from '@/api/invoice'
 import waves from '@/directive/waves' // waves directive
-import { parseTime } from '@/utils'
+import { parseTime , parseMoney } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 import { mapGetters } from 'vuex'
 
@@ -302,13 +305,14 @@ export default {
         title: [{ required: true, message: 'title is required', trigger: 'blur' }]
       },
       downloadLoading: false,
-      updaidDate: '',
+      unpaidDate: '',
       promotorList: [],
       showPaidInvoices: false,
       currentRole: ''
     }
   },
   created() {
+    //return this.$store.state.tagsView.cachedViews
     this.getTotalRows()
     this.getPromotors()
     this.getMinDate()
@@ -338,6 +342,7 @@ export default {
       }
       fetchFirstUnpaidDate(params).then(response => {
         this.listQuery.from = JSON.parse(response.data)
+        this.unpaidDate=this.listQuery.from 
       })
     },
     getPromotors() {
@@ -379,6 +384,30 @@ export default {
           this.listLoading = false
         }, 1.5 * 1000) */
       })
+    },
+    handleReset() {
+
+      var r = {
+        page: 1,
+        limit: 20,
+        promotor: undefined,
+        search: '',
+        pay_1: false,
+        pay_2: true,
+        pay_3: true,
+        act_1: true,
+        act_0: false,
+        sort: '-fac_fecha',
+        from: undefined,
+        to: undefined,
+        fromp: undefined,
+        top: undefined,
+        export: '',
+        countrows: ''
+      }
+      this.listQuery=r
+      //this.listQuery.page = 1
+      this.getTotalRows()
     },
     handleFilter() {
       this.listQuery.page = 1

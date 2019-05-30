@@ -45,6 +45,13 @@ export function fetchInvoice(id) {
   })
 }
 
+export function fetchPaymentsHistoryList(id) {
+  return request({
+    url: 'invoice/history/'+id,
+    method: 'get'
+  })
+}
+
 export function fetchArticle(id) {
   return request({
     url: '/invoice/detail',
@@ -79,8 +86,8 @@ export function updateArticle(data) {
 
 export function updateInvoice(id, data) {
   return request({
-    url: '/invoice/update/',
-    method: 'post',
+    url: '/invoice/update/'+id,
+    method: 'put',
     data
   })
 }

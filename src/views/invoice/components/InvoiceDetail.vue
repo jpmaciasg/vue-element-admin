@@ -16,60 +16,286 @@
 -->
       <div class="createPost-main-container">
         <el-row>
-         
+          <el-col :span="12">
+            <el-card class="box-card">
+   <el-row> 
+   <div class="single-label">{{ postForm.fac_serie }} {{ postForm.fac_folio }}<br /><br /></div>
+</el-row>
+<el-row> 
+   <el-col :span="6" class="single-label">Estatus</el-col>
+   <el-col :span="10">
+<el-switch
+      style="display: block"
+      v-model="postForm.fac_isactive"
+      active-color="#13ce66"
+      inactive-color="#ff4949"
+      active-text="Activa"
+      inactive-text="Cancelada"
+      @change= "updateInvoiceStatus"
+      >
+      
+    </el-switch>
 
-          <el-col :span="24">
-            <el-form-item style="margin-bottom: 40px;" prop="title">
-              <MDinput v-model="postForm.title" :maxlength="100" name="name" required>
-                Title
-              </MDinput>
-            </el-form-item>
+   </el-col>
+</el-row>
+</el-card>
+<el-card class="box-card">
+  <div class="text item">
+    {{ postForm.fac_emisornombre }}<br />
+    {{ postForm.fac_emisorrfc}}
+  </div>
+</el-card>
+<el-card class="box-card">
+  <div class="text item">
+    {{ postForm.fac_receptornombre }}<br />
+    {{ postForm.fac_receptorrfc }}
+  </div>
+</el-card>
+</el-col>
+<el-col :span="12">
+  <el-card class="box-card" style="height: 268px;">
 
-            <div class="postInfo-container">
-              <el-row>
-                <el-col :span="8">
-                  <el-form-item label-width="60px" label="Author:" class="postInfo-container-item">
-                    <el-select v-model="postForm.author" :remote-method="getRemoteUserList" filterable default-first-option remote placeholder="Search user">
-                      <el-option v-for="(item,index) in userListOptions" :key="item+index" :label="item" :value="item" />
-                    </el-select>
-                  </el-form-item>
-                </el-col>
+<el-row> 
+&nbsp;
+</el-row>
+<el-row> 
+<el-col :span="8"  class="text item"><span class="single-label">Subtotal:</span> {{ postForm.fac_subtotal }}</el-col><el-col :span="8"><span class="single-label">IVA:</span> {{ postForm.fac_iva }}</el-col><el-col :span="8"><span class="single-label">Total:</span> {{ postForm.fac_total }}</el-col>
+</el-row>
+<el-row> 
+&nbsp;
+</el-row>
+<el-row> 
+<el-col :span="8"  class="text item"><span class="single-label">Pagado:</span> {{ postForm.fac_payments }}</el-col><el-col :span="8"><span class="single-label">Pendiente:</span> {{ postForm.fac_total - postForm.fac_payments }}</el-col>
+</el-row>
+<el-row> 
+&nbsp;
+</el-row>
+<el-row> 
+   <el-col :span="6"  class="text item"><span class="single-label">Estatus:</span></el-col>
+   <el-col :span="14">
+<el-radio-group v-model="postForm.fac_pagada" @change="updateInvoicePaymentStatus">
+          <el-radio-button label="1">Pagada</el-radio-button>
+          <el-radio-button label="2">No pagada</el-radio-button>
+          <el-radio-button label="3">Confirmar</el-radio-button>
+        </el-radio-group>
 
-                <el-col :span="10">
-                  <el-form-item label-width="120px" label="Publush Time:" class="postInfo-container-item">
-                    <el-date-picker v-model="displayTime" type="datetime" format="yyyy-MM-dd HH:mm:ss" placeholder="Select date and time" />
-                  </el-form-item>
-                </el-col>
+   </el-col>
+</el-row>
+<el-row> 
+&nbsp;
+</el-row>
+<el-row> 
+  <el-col :span="6"  class="text item"><span class="single-label">Fecha de pago:</span></el-col>
+   <el-col :span="14">
+<el-date-picker v-model="postForm.fac_fechapago" type="date" placeholder="Fecha de pago" class="filter-item" @change="updateInvoicePaymentDate" value-format="yyyy-MM-dd"/>
+   </el-col>
+</el-row>
+<el-row> 
+&nbsp;
+</el-row>
+<el-row> 
+&nbsp;
+</el-row>
+</el-card>
+  </el-col>
+</el-row>
+<el-row>
+<el-collapse v-model="activeNames" @change="handleChange">
+  <el-collapse-item title="Conceptos" name="1">
+    <el-card class="box-card">
 
-                <el-col :span="6">
-                  <el-form-item label-width="90px" label="Importance:" class="postInfo-container-item">
-                    <el-rate
-                      v-model="postForm.importance"
-                      :max="3"
-                      :colors="['#99A9BF', '#F7BA2A', '#FF9900']"
-                      :low-threshold="1"
-                      :high-threshold="3"
-                      style="margin-top:8px;"
-                    />
-                  </el-form-item>
-                </el-col>
-              </el-row>
-            </div>
-          </el-col>
-        </el-row>
+<el-row> 
+  <el-col :span="6"  class="text item"><span class="single-label">Cantidad</span></el-col>
+  <el-col :span="12"  class="text item"><span class="single-label">Descripción</span></el-col>
+  <el-col :span="6"  class="text item"><span class="single-label">Importe</span></el-col>
+</el-row>
 
-        <el-form-item style="margin-bottom: 40px;" label-width="70px" label="Summary:">
-          <el-input v-model="postForm.content_short" :rows="1" type="textarea" class="article-textarea" autosize placeholder="Please enter the content" />
-          <span v-show="contentShortLength" class="word-counter">{{ contentShortLength }}words</span>
-        </el-form-item>
+<el-row v-for="con in concepts" >  
+  <el-col :span="6"  class="text item"><span >{{con.cantidad}}</span></el-col>
+  <el-col :span="12"  class="text item"><span >{{con.descripcion}}</span></el-col>
+  <el-col :span="6"  class="text item"><span >{{con.importe}}</span></el-col>
+</el-row>
+</el-card>
+  </el-collapse-item>
+  <el-collapse-item title="Pagos" name="2">
+    <el-row> 
+<el-col :span="12"  class="text item">
+  &nbsp;
+  <el-timeline>
+    <el-timeline-item
+      v-for="(payment, index) in payments"
+      :key="index"
+      :icon="'caret-right'"
+      :type="'primary'"
+      :color="'#0bbd87'"
+      :size="'normal'"
+      :timestamp="payment.his_date">
+      {{payment.his_amount}}
+    </el-timeline-item>
+  </el-timeline>
 
-        <el-form-item prop="content" style="margin-bottom: 30px;">
-          <Tinymce ref="editor" v-model="postForm.content" :height="400" />
-        </el-form-item>
+</el-col>
+   <el-col :span="12">
+<el-card class="box-card">
+  <el-row> 
+  <el-col :span="6"  class="text item"><span class="single-label">Fecha de pago:</span></el-col>
+   <el-col :span="14">
+<el-date-picker v-model="inputPaymentDate" type="date" placeholder="Fecha" class="filter-item" />
+</el-col>
+</el-row>
+  <el-row> 
+  <el-col :span="6"  class="text item"><span class="single-label">Monto:</span></el-col>
+   <el-col :span="14">
+<el-input v-model="inputAmount" placeholder="Monto" style="width: 220px;" class="filter-item" @keyup.enter.native="handleAddAmount" />
+   </el-col>
+</el-row>
+<el-row> 
+  <el-col :span="6"  class="text item">&nbsp;</el-col>
+   <el-col :span="14">
+<el-button>Agregar</el-button>
+   </el-col>
+</el-row>
+</el-card>
+<el-card class="box-card">
+  <p>Pagado: </p>
+  <div class="text item" style="font-size: 24px; font-weight: bold;">
+    {{ postForm.fac_payments}}
+  </div>
+</el-card>
 
-        <el-form-item prop="image_uri" style="margin-bottom: 30px;">
-          <Upload v-model="postForm.image_uri" />
-        </el-form-item>
+   </el-col>
+</el-row>
+  </el-collapse-item>
+  <el-collapse-item title="Bitácora" name="3">
+    <el-row> 
+<el-col :span="12"  class="text item">
+&nbsp;
+  <el-timeline>
+    <el-timeline-item
+      v-for="(log, index) in invoicelog"
+      :key="index"
+      :icon="'caret-right'"
+      :type="'primary'"
+      :color="'#0bbd87'"
+      :size="'normal'"
+      :timestamp="log.log_datetime">
+      {{log.log_text}}
+    </el-timeline-item>
+  </el-timeline>
+
+</el-col>
+   <el-col :span="12">
+<el-card class="box-card">
+  <el-row> 
+  <el-col :span="6"  class="text item"><span class="single-label">Comentario:</span></el-col>
+   <el-col :span="14">
+<el-input v-model="inputAmount" type="textarea" placeholder="Comentario" style="width: 400px;" class="filter-item" @keyup.enter.native="handleAddAmount" />
+   </el-col>
+</el-row>
+<el-row> 
+&nbsp;
+</el-row>
+<el-row> 
+  <el-col :span="6"  class="text item">&nbsp;</el-col>
+   <el-col :span="14">
+<el-button>Agregar</el-button>
+   </el-col>
+</el-row>
+</el-card>
+
+
+   </el-col>
+</el-row>
+  </el-collapse-item>
+  <el-collapse-item title="Complementos" name="4">
+    <el-card class="box-card">
+  <el-row> 
+  <el-col :span="6"  class="text item"><span class="single-label">&nbsp;</span></el-col>
+   <el-col :span="14">
+<el-input v-model="postForm.fac_complemento" type="textarea" placeholder="Complementos" style="width: 700px;" class="filter-item" @keyup.enter.native="handleAddAmount" />
+   </el-col>
+</el-row>
+<el-row> 
+&nbsp;
+</el-row>
+<el-row> 
+  <el-col :span="6"  class="text item">&nbsp;</el-col>
+   <el-col :span="14">
+<el-button @click="updateInvoiceComplement"> Guardar</el-button>
+   </el-col>
+</el-row>
+</el-card>
+  </el-collapse-item>
+  <el-collapse-item title="Cliente" name="5">
+    <el-card class="box-card">
+  <el-row> 
+  <el-col :span="6"  class="text item"><span class="single-label">&nbsp;</span></el-col>
+   <el-col :span="14">
+{{ invoiceClient.contact_fullname }}
+   </el-col>
+</el-row>
+<el-row> 
+&nbsp;
+</el-row>
+  <el-row> 
+  <el-col :span="6"  class="text item"><span class="single-label">&nbsp;</span></el-col>
+   <el-col :span="14">
+{{ invoiceClient.contact_taxid }}
+   </el-col>
+</el-row>
+<el-row> 
+&nbsp;
+</el-row>
+<el-row> 
+  <el-col :span="6"  class="text item"><span class="single-label">Correo electrònico:</span></el-col>
+   <el-col :span="14">
+<el-input v-model="invoiceClient.contact_email"  placeholder="E-mail" style="width: 500px;" class="filter-item" @keyup.enter.native="handleAddAmount" />
+   </el-col>
+</el-row>
+<el-row> 
+&nbsp;
+</el-row>
+<el-row> 
+  <el-col :span="6"  class="text item"><span class="single-label">Dirección:</span></el-col>
+   <el-col :span="14">
+<el-input v-model="invoiceClient.contact_address" type="textarea" placeholder="Calle, num, CP" style="width: 500px;" class="filter-item" @keyup.enter.native="handleAddAmount" />
+   </el-col>
+</el-row>
+<el-row> 
+&nbsp;
+</el-row>
+<el-row> 
+  <el-col :span="6"  class="text item"><span class="single-label">Observaciones:</span></el-col>
+   <el-col :span="14">
+<el-input v-model="invoiceClient.contact_comments" type="textarea" placeholder="Observaciones" style="width: 500px;" class="filter-item" @keyup.enter.native="handleAddAmount" />
+   </el-col>
+</el-row>
+<el-row> 
+&nbsp;
+</el-row>
+<el-row> 
+  <el-col :span="6"  class="text item"><span class="single-label">Promotor asignado:</span></el-col>
+   <el-col :span="14">
+<el-select v-model="postForm.fac_iduser" placeholder="Promotor" clearable class="filter-item">
+        <!--  <el-option key="0" label="-- Seleccionar --" value="" /> -->
+        <el-option v-for="item in promotorList" :key="item.id" :label="item.first_name + ' ' + item.last_name" :value="item.id" />
+      </el-select>
+   </el-col>
+</el-row>
+<el-row> 
+&nbsp;
+</el-row>
+<el-row> 
+  <el-col :span="6"  class="text item">&nbsp;</el-col>
+   <el-col :span="14">
+<el-button @click="updateInvoiceUserAndClient">Guardar</el-button>
+   </el-col>
+</el-row>
+</el-card>
+  </el-collapse-item>
+</el-collapse>
+
+</el-row>
       </div>
     </el-form>
   </div>
@@ -81,24 +307,12 @@ import Upload from '@/components/Upload/SingleImage3'
 import MDinput from '@/components/MDinput'
 import Sticky from '@/components/Sticky' // 粘性header组件
 import { validURL } from '@/utils/validate'
-import { fetchInvoice } from '@/api/invoice'
+import { fetchInvoice, fetchPromotorsList, fetchPaymentsHistoryList, updateInvoice  } from '@/api/invoice'
+import { fetchContact, updateContact  } from '@/api/invoice'
 import { searchUser } from '@/api/remote-search'
 import Warning from './Warning'
 import { CommentDropdown, PlatformDropdown, SourceUrlDropdown } from './Dropdown'
 
-const defaultForm = {
-  status: 'draft',
-  title: '', // 文章题目
-  content: '', // 文章内容
-  content_short: '', // 文章摘要
-  source_uri: '', // 文章外链
-  image_uri: '', // 文章图片
-  display_time: undefined, // 前台展示时间
-  id: undefined,
-  platforms: ['a-platform'],
-  comment_disabled: false,
-  importance: 0
-}
 
 export default {
   name: 'InvoiceDetail',
@@ -137,8 +351,11 @@ export default {
       }
     }
     return {
-      postForm: Object.assign({}, defaultForm),
+      postForm: {},
+      recoverForm: {},
       loading: false,
+      isActive: true,
+      paymentStatus: 2,
       userListOptions: [],
       rules: {
         image_uri: [{ validator: validateRequire }],
@@ -146,7 +363,36 @@ export default {
         content: [{ validator: validateRequire }],
         source_uri: [{ validator: validateSourceUri, trigger: 'blur' }]
       },
-      tempRoute: {}
+      tempRoute: {},
+      xmlInvoice:{},
+      concepts: [],
+      activeNames: [],
+      payments: [{
+          content: 'Custom icon',
+          timestamp: '2018-04-12 20:46',
+          size: 'large',
+          type: 'primary',
+          icon: 'el-icon-more'
+        }, {
+          content: 'Custom color',
+          timestamp: '2018-04-03 20:46',
+          color: '#0bbd87'
+        }, {
+          content: 'Custom size',
+          timestamp: '2018-04-03 20:46',
+          size: 'large'
+        }, {
+          content: 'Default node',
+          timestamp: '2018-04-03 20:46'
+        }],
+      invoicelog: [],
+      inputAmount: undefined,
+      inputPaymentDate: undefined,
+      inputPromotor: undefined,
+      inputObservaciones: undefined,
+      inputComplementos: undefined,
+      promotorList: [],
+      invoiceClient: {}
     }
   },
   computed: {
@@ -170,8 +416,10 @@ export default {
     if (this.isEdit) {
       const id = this.$route.params && this.$route.params.id
       this.fetchData(id)
+      this.fetchPaymentHistory(id)
+      this.getPromotors()
     } else {
-      this.postForm = Object.assign({}, defaultForm)
+      this.postForm = {}
     }
 
     // Why need to make a copy of this.$route here?
@@ -180,50 +428,208 @@ export default {
     this.tempRoute = Object.assign({}, this.$route)
   },
   methods: {
+    fetchPaymentHistory(id){
+      fetchPaymentsHistoryList(id).then(response => {
+        this.payments=response.data//JSON.parse(response.data);
+        /* if (Array.isArray(this.payments)){
+        console.log(this.payments[0]['his_amount'])
+        } */
+      }).catch(err => {
+        console.log(err)
+      })
+    },
     fetchData(id) {
       fetchInvoice(id).then(response => {
-        this.postForm = response.data
+
+        var convert = require('xml-js')
+        var tmpData = response.data
+        /*if (typeof(tmpData.fac_isactive)=='string') {
+          if(tmpData.fac_isactive=='true'){
+            tmpData.fac_isactive=true;
+          }
+          else 
+            tmpData.fac_isactive=false;
+        }*/
+
+        this.postForm = Object.assign({}, tmpData)
+        this.recoverForm = Object.assign({}, tmpData)
+        console.log('estatus:')
+        console.log(this.postForm.fac_isactive)
 
         // just for test
         this.postForm.title += `   Article Id:${this.postForm.fac_key}`
         this.postForm.content_short += `   Article Id:${this.postForm.fac_key}`
-
+        this.xmlInvoice=JSON.parse(convert.xml2json(this.postForm.fac_xml, {compact: true, spaces: 4}))
+        //console.log('JP1');
+        
         // set tagsview title
         this.setTagsViewTitle()
 
         // set page title
         this.setPageTitle()
+
+
+        /*process invoice*/
+        var comprobante, conceptos, concepto;
+          comprobante=this.xmlInvoice['cfdi:Comprobante'];
+          var attsComprobante=comprobante['_attributes'];
+          var keyCantidad='', keyDescripcion='', keyImporte='';
+          if (attsComprobante['Version'] != undefined){
+            //v 3.3
+            keyCantidad='Cantidad';
+            keyDescripcion='Descripcion';
+            keyImporte='Importe';
+          }
+          else{
+            //v 3.2
+            keyCantidad='cantidad';
+            keyDescripcion='descripcion';
+            keyImporte='importe';
+          }
+          //console.log(tmp);
+          conceptos=comprobante['cfdi:Conceptos'];
+          //console.log(conceptos);
+          //console.log(self.xml)
+          //
+
+          //console.log(conceptos)
+          var co=[]; 
+          if (Array.isArray(conceptos)){
+            //console.log('conceptos es arreglo')
+            conceptos.forEach(function(concepto) {
+            //console.log(concepto);
+            //a b c
+            });
+          }
+          else{
+            //console.log('conceptos es objeto')
+            Object.keys(conceptos).forEach(function(key) {
+            console.log('key:'+key);
+            concepto=conceptos[key];
+            //concepto es arreglo
+            if (Array.isArray(concepto)){
+              //console.log('conceptO es arreglo')
+              concepto.forEach(function(c) {
+                var atributos=c['_attributes'];
+                //console.log(atributos)
+                var elemento={cantidad:atributos[keyCantidad], descripcion:atributos[keyDescripcion] , importe:atributos[keyImporte]}
+                co.push(elemento);
+              });
+            }
+            else{
+              //console.log('conceptO es objeto')
+              var atributos=concepto['_attributes'];
+              //console.log(atributos)
+                var elemento={cantidad:atributos[keyCantidad], descripcion:atributos[keyDescripcion] , importe:atributos[keyImporte]}
+                co.push(elemento);
+            }
+
+
+            
+
+
+            
+            //concepto=conceptos[key];
+            //console.log('concepto:');
+            //console.log(concepto)
+            //var atributos=concepto['_attributes'];
+            //console.log(atributos)
+            //var elemento={cantidad:atributos[keyCantidad], descripcion:atributos[keyDescripcion] , importe:atributos[keyImporte]}
+            //co.push(elemento);
+          });
+          }
+          
+          //console.log(co);
+          this.concepts=co;
+
+          if (this.postForm.idclient){
+            this.getInvoiceClient()
+          }
+
+
       }).catch(err => {
         console.log(err)
       })
     },
-    setTagsViewTitle() {
-      const title = 'Edit Article'
-      const route = Object.assign({}, this.tempRoute, { title: `${title}-${this.postForm.fac_key}` })
-      this.$store.dispatch('tagsView/updateVisitedView', route)
+    getPromotors() {
+      // this.listLoading = true
+      fetchPromotorsList().then(response => {
+        this.promotorList = response.data
+      })
     },
-    setPageTitle() {
-      const title = 'Edit Article'
-      document.title = `${title} - ${this.postForm.fac_key}`
+    getInvoiceClient() {
+      // this.listLoading = true
+      fetchContact(this.promotorList.fac_idclient).then(response => {
+        this.invoiceClient = response.data
+      })
     },
-    submitForm() {
-      console.log(this.postForm)
-      this.$refs.postForm.validate(valid => {
-        if (valid) {
-          this.loading = true
-          this.$notify({
-            title: '成功',
-            message: '发布文章成功',
+    doSavePartialInvoice(data, keys){
+      updateInvoice(this.postForm.fac_key, data).then(response => {
+        this.recoverForm= Object.assign({}, this.postForm) 
+        this.$notify({
+            title: 'Actualizar',
+            message: 'Factura actualizada',
             type: 'success',
             duration: 2000
           })
-          this.postForm.status = 'published'
-          this.loading = false
-        } else {
-          console.log('error submit!!')
-          return false
-        }
+      }).catch(err => {
+        console.log(err)
+
+        keys.forEach(function(k) {
+            this.postForm[k]=this.recoverForm[k];
+            });
+        this.$notify({
+            title: 'Error',
+            message: 'Error al guardar la factura',
+            type: 'warning',
+            duration: 2000
+          })
       })
+  },
+  updateInvoiceStatus(){
+    var data ={
+      fac_isactive: this.postForm.fac_isactive
+    }
+    var keys=['fac_isactve'];
+    this.doSavePartialInvoice(data,keys);
+
+  },
+  updateInvoicePaymentStatus(){
+    var data ={
+      fac_pagada: this.postForm.fac_pagada
+    }
+    var keys=['fac_pagada'];
+    this.doSavePartialInvoice(data,keys);
+  },
+  updateInvoicePaymentDate(){
+    var data ={
+      fac_fechapago: this.postForm.fac_fechapago
+    }
+    var keys=['fac_fechapago'];
+    this.doSavePartialInvoice(data,keys);
+  },
+  updateInvoiceComplement(){
+    var data ={
+      fac_complemento: this.postForm.fac_complemento
+    }
+    var keys=['fac_complemento'];
+    this.doSavePartialInvoice(data,keys);
+  },
+  updateInvoiceUserAndClient(){
+    var data ={
+      fac_iduser: this.postForm.fac_iduser
+    }
+    var keys=['fac_iduser'];
+    this.doSavePartialInvoice(data,keys);
+  },
+    setTagsViewTitle() {
+      const title = 'Factura'
+      const route = Object.assign({}, this.tempRoute, { title: `${title}-${this.postForm.fac_serie} ${this.postForm.fac_folio}` })
+      this.$store.dispatch('tagsView/updateVisitedView', route)
+    },
+    setPageTitle() {
+      const title = 'Factura'
+      document.title = `${title} - ${this.postForm.fac_serie} ${this.postForm.fac_folio}`
     },
     draftForm() {
       if (this.postForm.content.length === 0 || this.postForm.title.length === 0) {
@@ -246,7 +652,10 @@ export default {
         if (!response.data.items) return
         this.userListOptions = response.data.items.map(v => v.name)
       })
-    }
+    },
+    handleChange(val) {
+        console.log(val);
+      }
   }
 }
 </script>
@@ -254,6 +663,10 @@ export default {
 <style lang="scss" scoped>
 @import "~@/styles/mixin.scss";
 
+.single-label{
+ font-weight: bold;
+ font-size: 14px; 
+}
 .createPost-container {
   position: relative;
 

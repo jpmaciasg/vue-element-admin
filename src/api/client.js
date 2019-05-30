@@ -8,11 +8,10 @@ export function fetchList(query) {
   })
 }
 
-export function fetchArticle(id) {
+export function fetchContact(id) {
   return request({
-    url: '/article/detail',
-    method: 'get',
-    params: { id }
+    url: '/contact/'+id,
+    method: 'get'
   })
 }
 
@@ -32,10 +31,10 @@ export function createArticle(data) {
   })
 }
 
-export function updateArticle(data) {
+export function updateContact(id, data) {
   return request({
-    url: '/article/update',
-    method: 'post',
+    url: '/contact/update/'+id,
+    method: 'put',
     data
   })
 }
