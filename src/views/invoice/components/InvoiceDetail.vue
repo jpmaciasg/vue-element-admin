@@ -31,8 +31,8 @@
                     inactive-color="#ff4949"
                     active-text="Activa"
                     inactive-text="Cancelada"
-                    @change="updateInvoiceStatus"
                     v-bind="isActiveEstatusEditable"
+                    @change="updateInvoiceStatus"
                   />
 
                 </el-col>
@@ -72,7 +72,7 @@
               <el-row>
                 <el-col :span="6" class="text item"><span class="single-label">Estatus:</span></el-col>
                 <el-col :span="14">
-                  <el-radio-group v-model="postForm.fac_pagada" @change="updateInvoicePaymentStatus" v-bind="isPaymentEstatusEditable">
+                  <el-radio-group v-model="postForm.fac_pagada" v-bind="isPaymentEstatusEditable" @change="updateInvoicePaymentStatus">
                     <el-radio-button label="1" v-bind="isPayedOptionEditable">Pagada</el-radio-button>
                     <el-radio-button label="2">No pagada</el-radio-button>
                     <el-radio-button label="3">Confirmar</el-radio-button>
@@ -92,15 +92,15 @@
               <el-row>
 &nbsp;
               </el-row>
-                              <el-row>
-                  <el-col :span="6" class="text item"><span class="single-label">Promotor asignado:</span></el-col>
-                  <el-col :span="14">
-                    <el-select v-model="postForm.fac_iduser" placeholder="Promotor" clearable class="filter-item" v-bind="isPromotorSelectionEnabled" @change="updatePromotor" >
-                      <!--  <el-option key="0" label="-- Seleccionar --" value="" /> -->
-                      <el-option v-for="item in promotorList" :key="item.id" :label="item.first_name + ' ' + item.last_name" :value="item.id" />
-                    </el-select>
-                  </el-col>
-                </el-row>
+              <el-row>
+                <el-col :span="6" class="text item"><span class="single-label">Promotor asignado:</span></el-col>
+                <el-col :span="14">
+                  <el-select v-model="postForm.fac_iduser" placeholder="Promotor" clearable class="filter-item" v-bind="isPromotorSelectionEnabled" @change="updatePromotor">
+                    <!--  <el-option key="0" label="-- Seleccionar --" value="" /> -->
+                    <el-option v-for="item in promotorList" :key="item.id" :label="item.first_name + ' ' + item.last_name" :value="item.id" />
+                  </el-select>
+                </el-col>
+              </el-row>
               <el-row>
 &nbsp;
               </el-row>
@@ -230,7 +230,7 @@
                 <el-row>
                   <el-col :span="6" class="text item">&nbsp;</el-col>
                   <el-col :span="14">
-                    <el-button @click="updateInvoiceComplement" v-bind="isComplementButonEnabled"> Guardar</el-button>
+                    <el-button v-bind="isComplementButonEnabled" @click="updateInvoiceComplement"> Guardar</el-button>
                   </el-col>
                 </el-row>
               </el-card>
@@ -304,7 +304,7 @@ import Upload from '@/components/Upload/SingleImage3'
 import MDinput from '@/components/MDinput'
 import Sticky from '@/components/Sticky' // 粘性header组件
 import { validURL } from '@/utils/validate'
-import { fetchInvoice, fetchPromotorsList, fetchPaymentsHistoryList, updateInvoice } from '@/api/invoice'
+import { fetchInvoice, fetchPromotorsList, fetchPaymentsHistoryList, updateInvoice, addInvoicePayment } from '@/api/invoice'
 import { fetchContact, updateContact } from '@/api/invoice'
 import { searchUser } from '@/api/remote-search'
 import Warning from './Warning'
@@ -409,63 +409,49 @@ export default {
         this.postForm.display_time = new Date(val)
       }
     },
-    isActiveEstatusEditable(){
-      //return {
-        if (this.currentRole == 'admin' || this.currentRole == 'operator'){
-            return {};
-        }
-        else
-          return {[`disabled`] : true };
-      	
-      //}
+    isActiveEstatusEditable() {
+      // return {
+      if (this.currentRole == 'admin' || this.currentRole == 'operator') {
+        return {}
+      } else { return { [`disabled`]: true } }
+
+      // }
     },
-    isPaymentEstatusEditable(){
-      //return {
-        if (this.currentRole == 'admin' || this.currentRole == 'operator'){
-            return {};
-        }
-        else
-          return {[`disabled`] : true };
-      	
-      //}
+    isPaymentEstatusEditable() {
+      // return {
+      if (this.currentRole == 'admin' || this.currentRole == 'operator') {
+        return {}
+      } else { return { [`disabled`]: true } }
+
+      // }
     },
-    isPayedOptionEditable(){
-      //return {
-        if (this.currentRole == 'admin'){
-            return {};
-        }
-        else
-          return {[`disabled`] : true };
-      	
-      //}
+    isPayedOptionEditable() {
+      // return {
+      if (this.currentRole == 'admin') {
+        return {}
+      } else { return { [`disabled`]: true } }
+
+      // }
     },
-    isPaymentButonEnabled(){
-      if (this.currentRole == 'admin' || this.currentRole == 'operator'){
-            return {};
-        }
-        else
-          return {[`disabled`] : true };
+    isPaymentButonEnabled() {
+      if (this.currentRole == 'admin' || this.currentRole == 'operator') {
+        return {}
+      } else { return { [`disabled`]: true } }
     },
-    isLogButonEnabled(){
-      if (this.currentRole == 'executive'){
-            return {[`disabled`] : true };
-        }
-        else
-          return {};
+    isLogButonEnabled() {
+      if (this.currentRole == 'executive') {
+        return { [`disabled`]: true }
+      } else { return {} }
     },
-    isComplementButonEnabled(){
-      if (this.currentRole == 'admin' || this.currentRole == 'operator'){
-            return {};
-        }
-        else
-          return {[`disabled`] : true };
+    isComplementButonEnabled() {
+      if (this.currentRole == 'admin' || this.currentRole == 'operator') {
+        return {}
+      } else { return { [`disabled`]: true } }
     },
-    isPromotorSelectionEnabled(){
-      if (this.currentRole == 'promotor' || this.userid == 23 ){
-            return {[`disabled`] : true };
-        }
-        else
-          return {};
+    isPromotorSelectionEnabled() {
+      if (this.currentRole == 'promotor' || this.userid == 23) {
+        return { [`disabled`]: true }
+      } else { return {} }
     },
     ...mapGetters([
       'roles',
@@ -671,7 +657,7 @@ export default {
       var keys = ['fac_fechapago']
       this.doSavePartialInvoice(data, keys)
     },
-    updatePromotor(){
+    updatePromotor() {
       var data = {
         fac_iduser: this.postForm.fac_iduser
       }
@@ -692,6 +678,48 @@ export default {
       var keys = ['fac_iduser']
       this.doSavePartialInvoice(data, keys)
     },
+    doSavePayment(){
+      var data={
+        his_amount:this.inputAmount,
+        his_invoice: this.id,
+        his_date:this.inputPaymentDate
+      };
+
+      addInvoicePayment(data).then(response => {
+        //this.recoverForm = Object.assign({}, this.postForm)
+        this.$notify({
+          title: 'Pagos',
+          message: 'Pago registrado',
+          type: 'success',
+          duration: 2000
+        })
+        this.getInvoicePaymentHistory()
+      }).catch(err => {
+        console.log(err)
+      })
+
+
+
+
+
+
+
+
+
+
+
+axios({url: 'api/invoice/history', data: newlog, method: 'POST' })
+        .then(resp => {
+this.form_cantidad='';
+this.form_paymentdate='';
+          this.getInvoicePaymentHistory();
+        })
+      .catch(err => {
+        console.log('error axios create payment');
+        console.log(err);
+alert('Error al guardar el pago');
+      });
+	},
     setTagsViewTitle() {
       const title = 'Factura'
       const route = Object.assign({}, this.tempRoute, { title: `${title}-${this.postForm.fac_serie} ${this.postForm.fac_folio}` })

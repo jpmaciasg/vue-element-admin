@@ -91,3 +91,11 @@ export function updateInvoice(id, data) {
     data
   })
 }
+
+export function addInvoicePayment(data) {
+  return request({
+    url: '/invoice/history',
+    method: 'put',
+    data
+  })
+}
