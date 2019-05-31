@@ -32,6 +32,7 @@
                     active-text="Activa"
                     inactive-text="Cancelada"
                     @change="updateInvoiceStatus"
+                    v-bind="isActiveEstatusEditable"
                   />
 
                 </el-col>
@@ -71,8 +72,8 @@
               <el-row>
                 <el-col :span="6" class="text item"><span class="single-label">Estatus:</span></el-col>
                 <el-col :span="14">
-                  <el-radio-group v-model="postForm.fac_pagada" @change="updateInvoicePaymentStatus">
-                    <el-radio-button label="1">Pagada</el-radio-button>
+                  <el-radio-group v-model="postForm.fac_pagada" @change="updateInvoicePaymentStatus" v-bind="isPaymentEstatusEditable">
+                    <el-radio-button label="1" v-bind="isPayedOptionEditable">Pagada</el-radio-button>
                     <el-radio-button label="2">No pagada</el-radio-button>
                     <el-radio-button label="3">Confirmar</el-radio-button>
                   </el-radio-group>
@@ -91,6 +92,15 @@
               <el-row>
 &nbsp;
               </el-row>
+                              <el-row>
+                  <el-col :span="6" class="text item"><span class="single-label">Promotor asignado:</span></el-col>
+                  <el-col :span="14">
+                    <el-select v-model="postForm.fac_iduser" placeholder="Promotor" clearable class="filter-item" v-bind="isPromotorSelectionEnabled" @change="updatePromotor" >
+                      <!--  <el-option key="0" label="-- Seleccionar --" value="" /> -->
+                      <el-option v-for="item in promotorList" :key="item.id" :label="item.first_name + ' ' + item.last_name" :value="item.id" />
+                    </el-select>
+                  </el-col>
+                </el-row>
               <el-row>
 &nbsp;
               </el-row>
@@ -151,7 +161,7 @@
                     <el-row>
                       <el-col :span="6" class="text item">&nbsp;</el-col>
                       <el-col :span="14">
-                        <el-button>Agregar</el-button>
+                        <el-button v-bind="isPaymentButonEnabled">Agregar</el-button>
                       </el-col>
                     </el-row>
                   </el-card>
@@ -198,7 +208,7 @@
                     <el-row>
                       <el-col :span="6" class="text item">&nbsp;</el-col>
                       <el-col :span="14">
-                        <el-button>Agregar</el-button>
+                        <el-button v-bind="isLogButonEnabled">Agregar</el-button>
                       </el-col>
                     </el-row>
                   </el-card>
@@ -220,7 +230,7 @@
                 <el-row>
                   <el-col :span="6" class="text item">&nbsp;</el-col>
                   <el-col :span="14">
-                    <el-button @click="updateInvoiceComplement"> Guardar</el-button>
+                    <el-button @click="updateInvoiceComplement" v-bind="isComplementButonEnabled"> Guardar</el-button>
                   </el-col>
                 </el-row>
               </el-card>
@@ -228,7 +238,7 @@
             <el-collapse-item title="Cliente" name="5">
               <el-card class="box-card">
                 <el-row>
-                  <el-col :span="6" class="text item"><span class="single-label">&nbsp;</span></el-col>
+                  <el-col :span="6" class="text item"><span class="single-label">Nombre: </span></el-col>
                   <el-col :span="14">
                     {{ invoiceClient.contact_fullname }}
                   </el-col>
@@ -237,7 +247,7 @@
 &nbsp;
                 </el-row>
                 <el-row>
-                  <el-col :span="6" class="text item"><span class="single-label">&nbsp;</span></el-col>
+                  <el-col :span="6" class="text item"><span class="single-label">RFC</span></el-col>
                   <el-col :span="14">
                     {{ invoiceClient.contact_taxid }}
                   </el-col>
@@ -273,18 +283,6 @@
 &nbsp;
                 </el-row>
                 <el-row>
-                  <el-col :span="6" class="text item"><span class="single-label">Promotor asignado:</span></el-col>
-                  <el-col :span="14">
-                    <el-select v-model="postForm.fac_iduser" placeholder="Promotor" clearable class="filter-item">
-                      <!--  <el-option key="0" label="-- Seleccionar --" value="" /> -->
-                      <el-option v-for="item in promotorList" :key="item.id" :label="item.first_name + ' ' + item.last_name" :value="item.id" />
-                    </el-select>
-                  </el-col>
-                </el-row>
-                <el-row>
-&nbsp;
-                </el-row>
-                <el-row>
                   <el-col :span="6" class="text item">&nbsp;</el-col>
                   <el-col :span="14">
                     <el-button @click="updateInvoiceUserAndClient">Guardar</el-button>
@@ -311,6 +309,7 @@ import { fetchContact, updateContact } from '@/api/invoice'
 import { searchUser } from '@/api/remote-search'
 import Warning from './Warning'
 import { CommentDropdown, PlatformDropdown, SourceUrlDropdown } from './Dropdown'
+import { mapGetters } from 'vuex'
 
 export default {
   name: 'InvoiceDetail',
@@ -390,7 +389,8 @@ export default {
       inputObservaciones: undefined,
       inputComplementos: undefined,
       promotorList: [],
-      invoiceClient: {}
+      invoiceClient: {},
+      currentRole: ''
     }
   },
   computed: {
@@ -408,7 +408,69 @@ export default {
       set(val) {
         this.postForm.display_time = new Date(val)
       }
-    }
+    },
+    isActiveEstatusEditable(){
+      //return {
+        if (this.currentRole == 'admin' || this.currentRole == 'operator'){
+            return {};
+        }
+        else
+          return {[`disabled`] : true };
+      	
+      //}
+    },
+    isPaymentEstatusEditable(){
+      //return {
+        if (this.currentRole == 'admin' || this.currentRole == 'operator'){
+            return {};
+        }
+        else
+          return {[`disabled`] : true };
+      	
+      //}
+    },
+    isPayedOptionEditable(){
+      //return {
+        if (this.currentRole == 'admin'){
+            return {};
+        }
+        else
+          return {[`disabled`] : true };
+      	
+      //}
+    },
+    isPaymentButonEnabled(){
+      if (this.currentRole == 'admin' || this.currentRole == 'operator'){
+            return {};
+        }
+        else
+          return {[`disabled`] : true };
+    },
+    isLogButonEnabled(){
+      if (this.currentRole == 'executive'){
+            return {[`disabled`] : true };
+        }
+        else
+          return {};
+    },
+    isComplementButonEnabled(){
+      if (this.currentRole == 'admin' || this.currentRole == 'operator'){
+            return {};
+        }
+        else
+          return {[`disabled`] : true };
+    },
+    isPromotorSelectionEnabled(){
+      if (this.currentRole == 'promotor' || this.userid == 23 ){
+            return {[`disabled`] : true };
+        }
+        else
+          return {};
+    },
+    ...mapGetters([
+      'roles',
+      'userid'
+    ])
   },
   created() {
     if (this.isEdit) {
@@ -418,6 +480,22 @@ export default {
       this.getPromotors()
     } else {
       this.postForm = {}
+    }
+
+    if (this.roles.includes('admin')) {
+      this.currentRole = 'admin'
+    }
+    if (this.roles.includes('operator')) {
+      this.currentRole = 'operator'
+    }
+    if (this.roles.includes('promotor')) {
+      this.currentRole = 'promotor'
+    }
+    if (this.roles.includes('executive')) {
+      this.currentRole = 'executive'
+    }
+    if (this.roles.includes('supervisor')) {
+      this.currentRole = 'supervisor'
     }
 
     // Why need to make a copy of this.$route here?
@@ -591,6 +669,13 @@ export default {
         fac_fechapago: this.postForm.fac_fechapago
       }
       var keys = ['fac_fechapago']
+      this.doSavePartialInvoice(data, keys)
+    },
+    updatePromotor(){
+      var data = {
+        fac_iduser: this.postForm.fac_iduser
+      }
+      var keys = ['fac_iduser']
       this.doSavePartialInvoice(data, keys)
     },
     updateInvoiceComplement() {

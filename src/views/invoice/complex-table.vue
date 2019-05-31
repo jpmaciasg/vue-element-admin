@@ -332,7 +332,7 @@ export default {
     if (this.roles.includes('supervisor')) {
       this.currentRole = 'supervisor'
     }
-    console.log(this.currentRole)
+    // console.log(this.currentRole)
   },
   methods: {
     getMinDate() {
