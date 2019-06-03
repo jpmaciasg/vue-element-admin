@@ -104,7 +104,7 @@
       </el-table-column>
       <el-table-column label="Total" width="120px" align="center">
         <template slot-scope="scope">
-          <span>Total: {{ scope.row.fac_total | parseMoney }}</span><br><span>Pagado: {{ scope.row.fac_payments }}</span><br><span>Deuda: {{ scope.row.fac_debt }}</span>
+          <span>Total: {{ scope.row.fac_total }}</span><br><span>Pagado: {{ scope.row.fac_payments }}</span><br><span>Deuda: {{ scope.row.fac_debt }}</span>
         </template>
       </el-table-column>
       <!-- <el-table-column v-if="showReviewer" label="Reviewer" width="110px" align="center">
@@ -152,7 +152,20 @@
         </template>
       </el-table-column>
     </el-table>
-
+<el-row>
+  <el-col :span="6">
+  &nbsp;
+  </el-col>
+  <el-col :span="6">
+  <span class="filter-item">Total: {{suma}} </span>
+  </el-col>
+  <el-col :span="6">
+  <span class="filter-item">Pagos: {{pagado}}</span>
+  </el-col>
+  <el-col :span="6">
+  <span class="filter-item">Pendiente: {{ suma - pagado }}</span>
+  </el-col>
+</el-row>
     <pagination
       v-show="total>0"
       :total="total"
@@ -258,6 +271,8 @@ export default {
       tableKey: 0,
       list: null,
       total: 0,
+      suma: 0,
+      pagado: 0,
       listLoading: true,
       listQuery: {
         page: 1,
@@ -275,7 +290,9 @@ export default {
         fromp: undefined,
         top: undefined,
         export: '',
-        countrows: ''
+        countrows: '',
+        sumrows: '',
+        payedrows: ''
       },
       importanceOptions: [{ label: 'ID Ascending', key: '1' }, { label: 'ID Descending', key: '2' }, { label: 'Por confirmar', key: '2' }],
       calendarTypeOptions,
@@ -314,6 +331,8 @@ export default {
   created() {
     // return this.$store.state.tagsView.cachedViews
     this.getTotalRows()
+    //this.getSumInvoices()
+    //this.getPaymentsInvoices()
     this.getPromotors()
     this.getMinDate()
 
@@ -372,18 +391,48 @@ export default {
     getTotalRows() {
       this.listLoading = true
       this.listQuery.countrows = '1'
+      this.listQuery.sumrows = ''
+      this.listQuery.payedrows = ''
       fetchList(this.listQuery).then(response => {
         // this.list = response.data
         this.total = parseInt(response.data)
+        console.log('got count' + this.total )
+
         this.listQuery.countrows = ''
-        this.getList()
+        this.listQuery.sumrows = '1'
+        this.listQuery.payedrows = ''
+        fetchList(this.listQuery).then(response => {
+          // this.list = response.data
+          this.suma = parseInt(response.data)
+          //this.listQuery.sumrows = ''
+          console.log('got sum' + this.suma )
+
+          this.listQuery.countrows = ''
+          this.listQuery.sumrows = ''
+          this.listQuery.payedrows = '1'
+          fetchList(this.listQuery).then(response => {
+            // this.list = response.data
+            this.pagado = parseInt(response.data)
+            //this.listQuery.payedrows = ''
+            console.log('got payed' + this.pagado )
+            this.listQuery.countrows = ''
+            this.listQuery.sumrows = ''
+            this.listQuery.payedrows = ''
+
+            this.getList()
+          });
+        });
+
+        //this.getList()
         // this.listLoading = false
 
         // Just to simulate the time of the request
         /* setTimeout(() => {
           this.listLoading = false
         }, 1.5 * 1000) */
-      })
+      });
+      
+      
     },
     handleReset() {
       var r = {
@@ -402,7 +451,9 @@ export default {
         fromp: undefined,
         top: undefined,
         export: '',
-        countrows: ''
+        countrows: '',
+        sumrows: '',
+        payedrows: ''
       }
       this.listQuery = r
       // this.listQuery.page = 1

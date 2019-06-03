@@ -99,3 +99,11 @@ export function addInvoicePayment(data) {
     data
   })
 }
+
+export function addInvoiceLog(data) {
+  return request({
+    url: '/invoice/log',
+    method: 'put',
+    data
+  })
+}
