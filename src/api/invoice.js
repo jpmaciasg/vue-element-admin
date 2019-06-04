@@ -52,6 +52,13 @@ export function fetchPaymentsHistoryList(id) {
   })
 }
 
+export function fetchLogs(id){
+	return request({
+		url: 'invoice/log/' + id,
+		method: 'get'
+	})
+}
+
 export function fetchArticle(id) {
   return request({
     url: '/invoice/detail',
@@ -95,7 +102,7 @@ export function updateInvoice(id, data) {
 export function addInvoicePayment(data) {
   return request({
     url: '/invoice/history',
-    method: 'put',
+    method: 'post',
     data
   })
 }
@@ -103,7 +110,7 @@ export function addInvoicePayment(data) {
 export function addInvoiceLog(data) {
   return request({
     url: '/invoice/log',
-    method: 'put',
+    method: 'post',
     data
   })
 }

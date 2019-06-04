@@ -22,7 +22,7 @@
                 <div class="single-label">{{ postForm.fac_serie }} {{ postForm.fac_folio }}<br><br></div>
               </el-row>
               <el-row>
-                <el-col :span="6" class="single-label">Estatus</el-col>
+                <el-col :span="9" class="single-label">Estatus</el-col>
                 <el-col :span="10">
                   <el-switch
                     v-model="postForm.fac_isactive"
@@ -139,7 +139,7 @@
                       :size="'normal'"
                       :timestamp="payment.his_date"
                     >
-                      {{ payment.his_amount }}
+                      {{ payment.his_amount }} 
                     </el-timeline-item>
                   </el-timeline>
 
@@ -149,33 +149,33 @@
                     <el-row>
                       <el-col :span="6" class="text item"><span class="single-label">Fecha de pago:</span></el-col>
                       <el-col :span="14">
-                        <el-date-picker v-model="inputPaymentDate" type="date" placeholder="Fecha" class="filter-item" />
+                        <el-date-picker v-model="inputPaymentDate" type="date" placeholder="Fecha" class="filter-item" value-format="yyyy-MM-dd"/>
                       </el-col>
                     </el-row>
                     <el-row>
                       <el-col :span="6" class="text item"><span class="single-label">Monto:</span></el-col>
                       <el-col :span="14">
-                        <el-input v-model="inputAmount" placeholder="Monto" style="width: 220px;" class="filter-item" @keyup.enter.native="handleAddAmount" />
+                        <el-input v-model="inputAmount" placeholder="Monto" style="width: 220px;" class="filter-item" @keyup.enter.native="" />
                       </el-col>
                     </el-row>
                     <el-row>
                       <el-col :span="6" class="text item">&nbsp;</el-col>
                       <el-col :span="14">
-                        <el-button v-bind="isPaymentButonEnabled">Agregar</el-button>
+                        <el-button v-bind="isPaymentButonEnabled" @click="doSavePayment">Agregar</el-button>
                       </el-col>
                     </el-row>
                   </el-card>
                   <el-card class="box-card">
                     <p>Pagado: </p>
                     <div class="text item" style="font-size: 24px; font-weight: bold;">
-                      {{ postForm.fac_payments }}
+                      {{ sumOfPayments }}
                     </div>
                   </el-card>
 
                 </el-col>
               </el-row>
             </el-collapse-item>
-            <el-collapse-item title="Bitácora" name="3">
+            <el-collapse-item title="Bit�cora" name="3">
               <el-row>
                 <el-col :span="12" class="text item">
 &nbsp;
@@ -199,7 +199,7 @@
                     <el-row>
                       <el-col :span="6" class="text item"><span class="single-label">Comentario:</span></el-col>
                       <el-col :span="14">
-                        <el-input v-model="inputAmount" type="textarea" placeholder="Comentario" style="width: 400px;" class="filter-item" @keyup.enter.native="handleAddAmount" />
+                        <el-input v-model="inputLog" type="textarea" placeholder="Comentario" style="width: 400px;" class="filter-item" @keyup.enter.native="doSaveLog" />
                       </el-col>
                     </el-row>
                     <el-row>
@@ -208,7 +208,7 @@
                     <el-row>
                       <el-col :span="6" class="text item">&nbsp;</el-col>
                       <el-col :span="14">
-                        <el-button v-bind="isLogButonEnabled">Agregar</el-button>
+                        <el-button v-bind="isLogButonEnabled" @click="doSaveLog">Agregar</el-button>
                       </el-col>
                     </el-row>
                   </el-card>
@@ -304,7 +304,7 @@ import Upload from '@/components/Upload/SingleImage3'
 import MDinput from '@/components/MDinput'
 import Sticky from '@/components/Sticky' // 粘性header组件
 import { validURL } from '@/utils/validate'
-import { fetchInvoice, fetchPromotorsList, fetchPaymentsHistoryList, updateInvoice, addInvoicePayment } from '@/api/invoice'
+import { fetchInvoice, fetchPromotorsList, fetchPaymentsHistoryList, updateInvoice, addInvoicePayment, fetchLogs, addInvoiceLog } from '@/api/invoice'
 import { fetchContact, updateContact } from '@/api/invoice'
 import { searchUser } from '@/api/remote-search'
 import Warning from './Warning'
@@ -388,9 +388,12 @@ export default {
       inputPromotor: undefined,
       inputObservaciones: undefined,
       inputComplementos: undefined,
+	inputLog: undefined,
       promotorList: [],
       invoiceClient: {},
-      currentRole: ''
+      currentRole: '',
+	sumOfPayments: 0,
+	meid:0
     }
   },
   computed: {
@@ -455,7 +458,7 @@ export default {
     },
     ...mapGetters([
       'roles',
-      'userid'
+      'id'
     ])
   },
   created() {
@@ -463,6 +466,7 @@ export default {
       const id = this.$route.params && this.$route.params.id
       this.fetchData(id)
       this.fetchPaymentHistory(id)
+	this.fetchLogHistory(id)
       this.getPromotors()
     } else {
       this.postForm = {}
@@ -483,6 +487,8 @@ export default {
     if (this.roles.includes('supervisor')) {
       this.currentRole = 'supervisor'
     }
+	this.meid=this.userid.id;
+console.log(this.userid);
 
     // Why need to make a copy of this.$route here?
     // Because if you enter this page and quickly switch tag, may be in the execution of the setTagsViewTitle function, this.$route is no longer pointing to the current page
@@ -492,14 +498,26 @@ export default {
   methods: {
     fetchPaymentHistory(id) {
       fetchPaymentsHistoryList(id).then(response => {
-        this.payments = response.data// JSON.parse(response.data);
-        /* if (Array.isArray(this.payments)){
-        console.log(this.payments[0]['his_amount'])
-        } */
+        this.payments = response.data ; // JSON.parse(response.data);
+         //if (Array.isArray(this.payments)){
+        //console.log(this.payments[0]['his_amount'])
+        //}
+	var t=0
+	this.payments.forEach(function(e){
+		t += parseInt(e.his_amount); 	
+	});
+	this.sumOfPayments=t;
       }).catch(err => {
         console.log(err)
       })
     },
+	fetchLogHistory(id){
+		fetchLogs(id).then(response => {
+			this.logs = response.data;	
+		}).catch(err => {
+			console.log(err)
+		})
+	},
     fetchData(id) {
       fetchInvoice(id).then(response => {
         var convert = require('xml-js')
@@ -514,6 +532,8 @@ export default {
 
         this.postForm = Object.assign({}, tmpData)
         this.recoverForm = Object.assign({}, tmpData)
+
+	this.sumOfPayments = this.postForm.fac_payments;
         console.log('estatus:')
         console.log(this.postForm.fac_isactive)
 
@@ -678,13 +698,36 @@ export default {
       var keys = ['fac_iduser']
       this.doSavePartialInvoice(data, keys)
     },
+	doSaveLog(){
+console.log(this.userid);
+		var uid=this.userid
+		var data={
+			log_text: this.inputLog,
+			log_invoice: this.postForm.fac_key,
+			log_date: new Date(),
+			log_cuser: uid 
+		}
+		if (this.inputLog != undefined && this.inputLog != ""){
+			addInvoiceLog(data).then(response => {
+				this.$notify({
+					title: 'Bitacora',
+					message: 'Registro guradado',
+					type: 'success',
+					duration: 200
+				})
+				this.inputLog='';
+			}).catch(err => {
+				console.log(err);
+			})
+		}
+	},
     doSavePayment(){
       var data={
         his_amount:this.inputAmount,
-        his_invoice: this.id,
+        his_invoice: this.postForm.fac_key,
         his_date:this.inputPaymentDate
       };
-
+if(this.inputAmount != "" && this.inputPaymentDate != undefined && this.inputPaymentDate != ''){
       addInvoicePayment(data).then(response => {
         //this.recoverForm = Object.assign({}, this.postForm)
         this.$notify({
@@ -693,32 +736,14 @@ export default {
           type: 'success',
           duration: 2000
         })
-        this.getInvoicePaymentHistory()
+	this.inputAmount='';
+	this.inputPaymentDate = ''
+        this.fetchPaymentHistory(this.postForm.fac_key)
       }).catch(err => {
         console.log(err)
       })
+}
 
-
-
-
-
-
-
-
-
-
-
-axios({url: 'api/invoice/history', data: newlog, method: 'POST' })
-        .then(resp => {
-this.form_cantidad='';
-this.form_paymentdate='';
-          this.getInvoicePaymentHistory();
-        })
-      .catch(err => {
-        console.log('error axios create payment');
-        console.log(err);
-alert('Error al guardar el pago');
-      });
 	},
     setTagsViewTitle() {
       const title = 'Factura'
