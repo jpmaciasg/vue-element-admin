@@ -59,7 +59,20 @@ export function fetchLogs(id){
 	})
 }
 
-export function fetchArticle(id) {
+export function deletePayment(id){
+  return request({
+		url: 'invoice/history/' + id,
+		method: 'delete'
+	})
+}
+export function deleteLog(id){
+	return request({
+		url: 'invoice/log/' + id,
+		method: 'delete'
+	})
+}
+
+/*export function fetchArticle(id) {
   return request({
     url: '/invoice/detail',
     method: 'get',
@@ -73,7 +86,7 @@ export function fetchPv(pv) {
     method: 'get',
     params: { pv }
   })
-}
+}*/
 
 export function createArticle(data) {
   return request({

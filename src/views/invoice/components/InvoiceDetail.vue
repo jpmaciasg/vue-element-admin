@@ -64,7 +64,7 @@
 &nbsp;
               </el-row>
               <el-row>
-                <el-col :span="8" class="text item"><span class="single-label">Pagado:</span> {{ postForm.fac_payments }}</el-col><el-col :span="8"><span class="single-label">Pendiente:</span> {{ postForm.fac_total - postForm.fac_payments }}</el-col>
+                <el-col :span="8" class="text item"><span class="single-label">Pagado:</span> {{ sumOfPayments}}</el-col><el-col :span="8"><span class="single-label">Pendiente:</span> {{ postForm.fac_total - postForm.fac_payments }}</el-col>
               </el-row>
               <el-row>
 &nbsp;
@@ -139,7 +139,7 @@
                       :size="'normal'"
                       :timestamp="payment.his_date"
                     >
-                      {{ payment.his_amount }} 
+                      {{ payment.his_amount }} <el-button @click="doDeletePayment(payment.his_key)">x</el-button>
                     </el-timeline-item>
                   </el-timeline>
 
@@ -175,7 +175,7 @@
                 </el-col>
               </el-row>
             </el-collapse-item>
-            <el-collapse-item title="Bit�cora" name="3">
+            <el-collapse-item title="Bitácora" name="3">
               <el-row>
                 <el-col :span="12" class="text item">
 &nbsp;
@@ -187,9 +187,9 @@
                       :type="'primary'"
                       :color="'#0bbd87'"
                       :size="'normal'"
-                      :timestamp="log.log_datetime"
+                      :timestamp="log.log_datetime | humanDate"
                     >
-                      {{ log.log_text }}
+                      {{log.username}}: {{ log.log_text }}  <el-button @click="doDeleteLog(log.log_key)">x</el-button>
                     </el-timeline-item>
                   </el-timeline>
 
@@ -240,7 +240,7 @@
                 <el-row>
                   <el-col :span="6" class="text item"><span class="single-label">Nombre: </span></el-col>
                   <el-col :span="14">
-                    {{ invoiceClient.contact_fullname }}
+                    {{ postFormClient.contact_fullname }}
                   </el-col>
                 </el-row>
                 <el-row>
@@ -249,7 +249,7 @@
                 <el-row>
                   <el-col :span="6" class="text item"><span class="single-label">RFC</span></el-col>
                   <el-col :span="14">
-                    {{ invoiceClient.contact_taxid }}
+                    {{ postFormClient.contact_taxid }}
                   </el-col>
                 </el-row>
                 <el-row>
@@ -258,7 +258,7 @@
                 <el-row>
                   <el-col :span="6" class="text item"><span class="single-label">Correo electrònico:</span></el-col>
                   <el-col :span="14">
-                    <el-input v-model="invoiceClient.contact_email" placeholder="E-mail" style="width: 500px;" class="filter-item" @keyup.enter.native="handleAddAmount" />
+                    <el-input v-model="postFormClient.contact_email" placeholder="E-mail" style="width: 500px;" class="filter-item" />
                   </el-col>
                 </el-row>
                 <el-row>
@@ -267,7 +267,7 @@
                 <el-row>
                   <el-col :span="6" class="text item"><span class="single-label">Dirección:</span></el-col>
                   <el-col :span="14">
-                    <el-input v-model="invoiceClient.contact_address" type="textarea" placeholder="Calle, num, CP" style="width: 500px;" class="filter-item" @keyup.enter.native="handleAddAmount" />
+                    <el-input v-model="postFormClient.contact_address" type="textarea" placeholder="Calle, num, CP" style="width: 500px;" class="filter-item"  />
                   </el-col>
                 </el-row>
                 <el-row>
@@ -276,7 +276,7 @@
                 <el-row>
                   <el-col :span="6" class="text item"><span class="single-label">Observaciones:</span></el-col>
                   <el-col :span="14">
-                    <el-input v-model="invoiceClient.contact_comments" type="textarea" placeholder="Observaciones" style="width: 500px;" class="filter-item" @keyup.enter.native="handleAddAmount" />
+                    <el-input v-model="postFormClient.contact_comment" type="textarea" placeholder="Observaciones" style="width: 500px;" class="filter-item" @keyup.enter.native="doSaveClient" />
                   </el-col>
                 </el-row>
                 <el-row>
@@ -285,7 +285,7 @@
                 <el-row>
                   <el-col :span="6" class="text item">&nbsp;</el-col>
                   <el-col :span="14">
-                    <el-button @click="updateInvoiceUserAndClient">Guardar</el-button>
+                    <el-button @click="doSaveClient">Guardar</el-button>
                   </el-col>
                 </el-row>
               </el-card>
@@ -304,8 +304,8 @@ import Upload from '@/components/Upload/SingleImage3'
 import MDinput from '@/components/MDinput'
 import Sticky from '@/components/Sticky' // 粘性header组件
 import { validURL } from '@/utils/validate'
-import { fetchInvoice, fetchPromotorsList, fetchPaymentsHistoryList, updateInvoice, addInvoicePayment, fetchLogs, addInvoiceLog } from '@/api/invoice'
-import { fetchContact, updateContact } from '@/api/invoice'
+import { fetchInvoice, fetchPromotorsList, fetchPaymentsHistoryList, updateInvoice, addInvoicePayment, fetchLogs, addInvoiceLog, deleteLog,deletePayment } from '@/api/invoice'
+import { fetchContact, updateContact } from '@/api/client'
 import { searchUser } from '@/api/remote-search'
 import Warning from './Warning'
 import { CommentDropdown, PlatformDropdown, SourceUrlDropdown } from './Dropdown'
@@ -350,6 +350,8 @@ export default {
     return {
       postForm: {},
       recoverForm: {},
+      postFormClient: {},
+      recoverFormClient: {},
       loading: false,
       isActive: true,
       paymentStatus: 2,
@@ -458,7 +460,7 @@ export default {
     },
     ...mapGetters([
       'roles',
-      'id'
+      'userid'
     ])
   },
   created() {
@@ -468,6 +470,7 @@ export default {
       this.fetchPaymentHistory(id)
 	this.fetchLogHistory(id)
       this.getPromotors()
+      //this.getClient(id)
     } else {
       this.postForm = {}
     }
@@ -487,8 +490,8 @@ export default {
     if (this.roles.includes('supervisor')) {
       this.currentRole = 'supervisor'
     }
-	this.meid=this.userid.id;
-console.log(this.userid);
+	this.meid=this.userid;
+console.log(this.meid);
 
     // Why need to make a copy of this.$route here?
     // Because if you enter this page and quickly switch tag, may be in the execution of the setTagsViewTitle function, this.$route is no longer pointing to the current page
@@ -511,9 +514,25 @@ console.log(this.userid);
         console.log(err)
       })
     },
+    /*getClient(id){
+      fetchClient(id).then(response => {
+        var convert = require('xml-js')
+        var tmpData = response.data
+        /* if (typeof(tmpData.fac_isactive)=='string') {
+          if(tmpData.fac_isactive=='true'){
+            tmpData.fac_isactive=true;
+          }
+          else
+            tmpData.fac_isactive=false;
+        }* /
+
+        this.postFormClient = Object.assign({}, tmpData)
+        this.recoverFormClient = Object.assign({}, tmpData)
+      });
+    },*/
 	fetchLogHistory(id){
 		fetchLogs(id).then(response => {
-			this.logs = response.data;	
+			this.invoicelog = response.data;	
 		}).catch(err => {
 			console.log(err)
 		})
@@ -614,7 +633,7 @@ console.log(this.userid);
         // console.log(co);
         this.concepts = co
 
-        if (this.postForm.idclient) {
+        if (this.postForm.fac_idclient) {
           this.getInvoiceClient()
         }
       }).catch(err => {
@@ -629,8 +648,23 @@ console.log(this.userid);
     },
     getInvoiceClient() {
       // this.listLoading = true
-      fetchContact(this.promotorList.fac_idclient).then(response => {
-        this.invoiceClient = response.data
+      fetchContact(this.postForm.fac_idclient).then(response => {
+        var tmpData=response.data;
+
+        this.postFormClient = Object.assign({}, tmpData)
+        this.recoverFormClient = Object.assign({}, tmpData)
+
+      }).catch(err => {
+        console.log(err)
+
+        this.postFormClient = Object.assign({}, recoverFormClient);
+
+        this.$notify({
+          title: 'Error',
+          message: 'Error al guardar datos del cliente',
+          type: 'warning',
+          duration: 2000
+        })
       })
     },
     doSavePartialInvoice(data, keys) {
@@ -648,6 +682,28 @@ console.log(this.userid);
         keys.forEach(function(k) {
           this.postForm[k] = this.recoverForm[k]
         })
+        this.$notify({
+          title: 'Error',
+          message: 'Error al guardar la factura',
+          type: 'warning',
+          duration: 2000
+        })
+      })
+    },
+    doSaveClient(){
+      updateContact(this.postFormClient.id, this.recoverFormClient).then(response => {
+        this.recoverFormClient = Object.assign({}, this.postFormClient)
+        this.$notify({
+          title: 'Actualizar',
+          message: 'Datos de cliente actualizados',
+          type: 'success',
+          duration: 2000
+        })
+      }).catch(err => {
+        console.log(err)
+
+        this.postFormClient = Object.assign({}, recoverFormClient)
+
         this.$notify({
           title: 'Error',
           message: 'Error al guardar la factura',
@@ -699,7 +755,7 @@ console.log(this.userid);
       this.doSavePartialInvoice(data, keys)
     },
 	doSaveLog(){
-console.log(this.userid);
+//console.log(this.userid);
 		var uid=this.userid
 		var data={
 			log_text: this.inputLog,
@@ -711,16 +767,44 @@ console.log(this.userid);
 			addInvoiceLog(data).then(response => {
 				this.$notify({
 					title: 'Bitacora',
-					message: 'Registro guradado',
+					message: 'Registro guardado',
 					type: 'success',
-					duration: 200
+					duration: 2000
 				})
-				this.inputLog='';
+        this.inputLog='';
+        this.fetchLogHistory(this.postForm.fac_key);
+        
 			}).catch(err => {
 				console.log(err);
 			})
 		}
-	},
+  },
+  doDeletePayment(id){
+    deletePayment(id).then(response => {
+        //this.recoverForm = Object.assign({}, this.postForm)
+        this.$notify({
+          title: 'Pagos',
+          message: 'Registro eliminado',
+          type: 'success',
+          duration: 2000
+        });
+
+        this.fetchPaymentHistory(this.postForm.fac_key)
+    });
+  },
+  doDeleteLog(id){
+    deleteLog(id).then(response => {
+        //this.recoverForm = Object.assign({}, this.postForm)
+        this.$notify({
+          title: 'Bitacora',
+          message: 'Registro eliminado',
+          type: 'success',
+          duration: 2000
+        });
+
+        this.fetchLogHistory(this.postForm.fac_key);
+    });
+  },
     doSavePayment(){
       var data={
         his_amount:this.inputAmount,
@@ -779,7 +863,22 @@ if(this.inputAmount != "" && this.inputPaymentDate != undefined && this.inputPay
     handleChange(val) {
       console.log(val)
     }
-  }
+  },
+  filters: {
+       // Filter definitions
+        humanDate(value) {
+          const options = {
+  year: 'numeric',
+  month: 'numeric',
+  day: 'numeric',
+  hour: 'numeric',
+  minute: 'numeric',
+  second: 'numeric'
+};
+           var d=new Date(value);
+          return new Intl.DateTimeFormat('es-MX', options).format(d)//d.toDateString() + " " + d.toTimeString();
+        }
+    }
 }
 </script>
 

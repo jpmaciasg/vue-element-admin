@@ -66,6 +66,7 @@ const actions = {
         const { first_name, last_name, avatar, introduction, id, username, email, role_name } = data
         const roles = new Array(role_name)
         console.log(roles)
+        console.log(id)
         const name = first_name + ' ' + last_name
         // roles must be a non-empty array
         if (!roles || roles.length <= 0) {
