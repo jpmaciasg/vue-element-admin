@@ -8,7 +8,7 @@
       <span style="font-size:12px;" class="filter-item">(Deuda más antigua: {{ unpaidDate }})</span>
       <el-date-picker v-model="listQuery.from" type="date" placeholder="Fecha inicial" class="filter-item" />
       <el-date-picker v-model="listQuery.to" type="date" placeholder="Fecha final" class="filter-item" />
-      <el-select v-model="listQuery.promotor" placeholder="Promotor" clearable style="width: 210px" class="filter-item">
+      <el-select v-model="listQuery.promotor" placeholder="Promotor" clearable style="width: 210px" class="filter-item" v-bind="enabledPromotorFilter">
         <!--  <el-option key="0" label="-- Seleccionar --" value="" /> -->
         <el-option v-for="item in promotorList" :key="item.id" :label="item.first_name + ' ' + item.last_name" :value="item.id" />
       </el-select>
@@ -16,9 +16,9 @@
 
       <span class="filter-item" style="font-weight: bold">Pagos: </span>
       <!-- <el-checkbox-group class="filter-item"> -->
-      <el-checkbox v-model="listQuery.pay_1" label="Pagada" class="filter-item" />
-      <el-checkbox v-model="listQuery.pay_3" label="Por confirmar" class="filter-item" />
-      <el-checkbox v-model="listQuery.pay_2" label="No pagada" class="filter-item" />
+      <el-checkbox v-model="listQuery.pay_1" label="Pagada" class="filter-item" v-bind="enabledP1Filter"/>
+      <el-checkbox v-model="listQuery.pay_3" label="Por confirmar" class="filter-item" v-bind="enabledP3Filter"/>
+      <el-checkbox v-model="listQuery.pay_2" label="No pagada" class="filter-item" v-bind="enabledP2Filter"/>
 
       <!-- </el-checkbox-group> -->
 
@@ -32,8 +32,8 @@
 
       &nbsp;&nbsp;&nbsp;<span class="filter-item" style="font-weight: bold">Estado: </span>
       <!-- <el-checkbox-group class="filter-item"> -->
-      <el-checkbox v-model="listQuery.act_1" label="Activa" class="filter-item" />
-      <el-checkbox v-model="listQuery.act_0" label="Cancelada" class="filter-item" />
+      <el-checkbox v-model="listQuery.act_1" label="Activa" class="filter-item" v-bind="enabledA1Filter"/>
+      <el-checkbox v-model="listQuery.act_0" label="Cancelada" class="filter-item" v-bind="enabledA0Filter"/>
       <!--  </el-checkbox-group> -->
       <!--
     </el-checkbox-group>
@@ -152,20 +152,20 @@
         </template>
       </el-table-column>
     </el-table>
-<el-row>
-  <el-col :span="6">
+    <el-row>
+      <el-col :span="6">
   &nbsp;
-  </el-col>
-  <el-col :span="6">
-  <span class="filter-item">Total: {{suma}} </span>
-  </el-col>
-  <el-col :span="6">
-  <span class="filter-item">Pagos: {{pagado}}</span>
-  </el-col>
-  <el-col :span="6">
-  <span class="filter-item">Pendiente: {{ suma - pagado }}</span>
-  </el-col>
-</el-row>
+      </el-col>
+      <el-col :span="6">
+        <span class="filter-item">Total: {{ suma }} </span>
+      </el-col>
+      <el-col :span="6">
+        <span class="filter-item">Pagos: {{ pagado }}</span>
+      </el-col>
+      <el-col :span="6">
+        <span class="filter-item">Pendiente: {{ suma - pagado }}</span>
+      </el-col>
+    </el-row>
     <pagination
       v-show="total>0"
       :total="total"
@@ -274,31 +274,12 @@ export default {
       suma: 0,
       pagado: 0,
       listLoading: true,
-      listQuery: {
-        page: 1,
-        limit: 20,
-        promotor: undefined,
-        search: '',
-        pay_1: false,
-        pay_2: true,
-        pay_3: true,
-        act_1: true,
-        act_0: false,
-        sort: '-fac_fecha',
-        from: undefined,
-        to: undefined,
-        fromp: undefined,
-        top: undefined,
-        export: '',
-        countrows: '',
-        sumrows: '',
-        payedrows: ''
-      },
-      importanceOptions: [{ label: 'ID Ascending', key: '1' }, { label: 'ID Descending', key: '2' }, { label: 'Por confirmar', key: '2' }],
+      listQuery: {},
+      // importanceOptions: [{ label: 'ID Ascending', key: '1' }, { label: 'ID Descending', key: '2' }, { label: 'Por confirmar', key: '2' }],
       calendarTypeOptions,
-      sortOptions: [{ label: 'ID Ascending', key: '+id' }, { label: 'ID Descending', key: '-id' }],
+      // sortOptions: [{ label: 'ID Ascending', key: '+id' }, { label: 'ID Descending', key: '-id' }],
       statusOptions: ['published', 'draft', 'deleted'],
-      showReviewer: false,
+      // showReviewer: false,
       temp: {
         id: undefined,
         importance: 1,
@@ -325,14 +306,15 @@ export default {
       unpaidDate: '',
       promotorList: [],
       showPaidInvoices: false,
-      currentRole: ''
+      currentRole: '',
+      filterPermissions: {}
     }
   },
   created() {
     // return this.$store.state.tagsView.cachedViews
     this.getTotalRows()
-    //this.getSumInvoices()
-    //this.getPaymentsInvoices()
+    // this.getSumInvoices()
+    // this.getPaymentsInvoices()
     this.getPromotors()
     this.getMinDate()
 
@@ -351,7 +333,10 @@ export default {
     if (this.roles.includes('supervisor')) {
       this.currentRole = 'supervisor'
     }
-    // console.log(this.currentRole)
+    this.listQuery=this.filterOptions;
+    console.log('uid');
+    console.log(this.userid);
+    this.filterPermissions= this.filterRolePermissions;
   },
   methods: {
     getMinDate() {
@@ -396,7 +381,7 @@ export default {
       fetchList(this.listQuery).then(response => {
         // this.list = response.data
         this.total = parseInt(response.data)
-        console.log('got count' + this.total )
+        console.log('got count' + this.total)
 
         this.listQuery.countrows = ''
         this.listQuery.sumrows = '1'
@@ -404,8 +389,8 @@ export default {
         fetchList(this.listQuery).then(response => {
           // this.list = response.data
           this.suma = parseInt(response.data)
-          //this.listQuery.sumrows = ''
-          console.log('got sum' + this.suma )
+          // this.listQuery.sumrows = ''
+          console.log('got sum' + this.suma)
 
           this.listQuery.countrows = ''
           this.listQuery.sumrows = ''
@@ -413,29 +398,27 @@ export default {
           fetchList(this.listQuery).then(response => {
             // this.list = response.data
             this.pagado = parseInt(response.data)
-            //this.listQuery.payedrows = ''
-            console.log('got payed' + this.pagado )
+            // this.listQuery.payedrows = ''
+            console.log('got payed' + this.pagado)
             this.listQuery.countrows = ''
             this.listQuery.sumrows = ''
             this.listQuery.payedrows = ''
 
             this.getList()
-          });
-        });
+          })
+        })
 
-        //this.getList()
+        // this.getList()
         // this.listLoading = false
 
         // Just to simulate the time of the request
         /* setTimeout(() => {
           this.listLoading = false
         }, 1.5 * 1000) */
-      });
-      
-      
+      })
     },
     handleReset() {
-      var r = {
+      /*var r = {
         page: 1,
         limit: 20,
         promotor: undefined,
@@ -454,8 +437,8 @@ export default {
         countrows: '',
         sumrows: '',
         payedrows: ''
-      }
-      this.listQuery = r
+      }*/
+      this.listQuery = this.filterOptions;
       // this.listQuery.page = 1
       this.getTotalRows()
     },
@@ -586,7 +569,7 @@ export default {
 
         import('@/vendor/Export2Excel').then(excel => {
           const tHeader = ['FACTURA', 'FECHA', 'CLIENTE', 'RFC', 'TOTAL', 'PAGADO', 'DEUDA', 'ESTATUS']
-          const filterVal = ['fac_folio', 'fac_fecha', 'fac_receptornombre', 'fac_receptorrfc', 'fac_total', 'fac_payments', 'fac_debt', 'fac_pagadatext']
+          const filterVal = ['fac_folio', 'fac_fecha', 'fac_receptornombre', 'fac_receptorrfc', 'fac_total', 'fac_payments', 'fac_debt', 'fac_pagadatext', 'fac_username']
           const data = this.formatJson(filterVal, dlist)
           excel.export_json_to_excel({
             header: tHeader,
@@ -609,8 +592,147 @@ export default {
   },
   computed: {
     ...mapGetters([
-      'roles'
-    ])
+      'roles',
+      'userid'
+    ]),
+    enabledPromotorFilter(){
+      var r={}
+      if (this.filterPermissions['promotor'] == false){
+        r={[`disabled`]: true};
+      }
+      return r;
+    },
+    enabledP1Filter(){
+      var r={}
+      if (this.filterPermissions['pay_1'] == false){
+        r={[`disabled`]: true};
+      }
+      return r;
+    },
+    enabledP2Filter(){
+      var r={}
+      if (this.filterPermissions['pay_2'] == false){
+        r={[`disabled`]: true};
+      }
+      return r;
+    },
+    enabledP3Filter(){
+      var r={}
+      if (this.filterPermissions['pay_3'] == false){
+        r={[`disabled`]: true};
+      }
+      return r;
+    },
+    enabledA0Filter(){
+      var r={}
+      if (this.filterPermissions['act_0'] == false){
+        r={[`disabled`]: true};
+      }
+      return r;
+    },
+    enabledA1Filter(){
+      var r={}
+      if (this.filterPermissions['act_1'] == false){
+        r={[`disabled`]: true};
+      }
+      return r;
+    },
+    filterRolePermissions(){
+      var permissionsGeneral= {
+        promotor: true,
+        pay_1: true,
+        pay_2: true,
+        pay_3: true,
+        act_1: true,
+        act_0: true,
+    };
+      if (this.currentRole== "promotor") {
+        permissionsGeneral['promotor']= false;
+        permissionsGeneral['pay_1']= false;
+        permissionsGeneral['pay_2']= false;
+        permissionsGeneral['pay_3']= false;
+        permissionsGeneral['act_0']= false;
+        permissionsGeneral['act_1']= false;
+      }
+      if (this.currentRole== "operator") {
+        permissionsGeneral['promotor']= true;
+        permissionsGeneral['pay_1']= false;
+        permissionsGeneral['pay_2']= false;
+        permissionsGeneral['pay_3']= false;
+        permissionsGeneral['act_0']= false;
+        permissionsGeneral['act_1']= false;
+      }
+      if (this.roles.includes('admin')) {
+        
+      }
+      if (this.currentRole== "executive") {
+        
+      }
+      if (this.currentRole== "supervisor") {
+        permissionsGeneral['promotor']= true;
+        permissionsGeneral['pay_1']= false;
+        permissionsGeneral['pay_2']= false;
+        permissionsGeneral['pay_3']= false;
+        permissionsGeneral['act_0']= false;
+        permissionsGeneral['act_1']= false;
+      }
+
+      return permissionsGeneral;
+    },
+    filterOptions() {
+      var filterOptionsGeneral= {
+        page: 1,
+        limit: 20,
+        promotor: undefined,
+        search: '',
+        pay_1: false,
+        pay_2: true,
+        pay_3: true,
+        act_1: true,
+        act_0: false,
+        sort: '-fac_fecha',
+        from: undefined,
+        to: undefined,
+        fromp: undefined,
+        top: undefined,
+        export: '',
+        countrows: '',
+        sumrows: '',
+        payedrows: ''
+    };
+      if (this.currentRole== "promotor") {
+        filterOptionsGeneral['promotor']= this.userid;
+        filterOptionsGeneral['pay_1']= false;
+        filterOptionsGeneral['pay_2']= true;
+        filterOptionsGeneral['pay_3']= false;
+        filterOptionsGeneral['act_0']= false;
+        filterOptionsGeneral['act_1']= true;
+      }
+      if (this.currentRole== "operator") {
+        filterOptionsGeneral['promotor']= undefined;
+        filterOptionsGeneral['pay_1']= false;
+        filterOptionsGeneral['pay_2']= true;
+        filterOptionsGeneral['pay_3']= false;
+        filterOptionsGeneral['act_0']= false;
+        filterOptionsGeneral['act_1']= true;
+      }
+      if (this.roles.includes('admin')) {
+        
+      }
+      if (this.currentRole== "executive") {
+        
+      }
+      if (this.currentRole== "supervisor") {
+        filterOptionsGeneral['promotor']= undefined;
+        filterOptionsGeneral['pay_1']= false;
+        filterOptionsGeneral['pay_2']= true;
+        filterOptionsGeneral['pay_3']= false;
+        filterOptionsGeneral['act_0']= false;
+        filterOptionsGeneral['act_1']= true;
+      }
+
+      return filterOptionsGeneral;
+    }
   }
 }
 </script>
