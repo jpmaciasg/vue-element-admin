@@ -42,6 +42,32 @@ class NewContactAPIView(APIView):
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+
+class UpdateContactAPIView(UpdateAPIView):
+    permission_classes = (AllowAny,)
+
+    def put(self, request, *args, **kwargs):
+        id = self.kwargs['id']
+        logger = logging.getLogger('restapi.contacts')
+        i = Contact.objects.get(pk=id)
+        data = request.data
+        #logger.debug(data)
+        #print(data)
+
+        serializer = ContactSerializer(i, data=data)
+        #logger.debug(serializer.initial_data['fac_pagada'])
+        if serializer.is_valid():
+            #logger.debug('antes save update')
+            #print('antes save update')
+            #print(serializer.validated_data['fac_isactive'])
+            #logger.debug(serializer.validated_data['fac_pagada'])
+            serializer.save(raise_exception=True)
+            #logger.debug(serializer.data['fac_isactive'])
+            #print(serializer.data['fac_isactive'])
+            return Response(serializer.data)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 '''
 class AuthUserAPIView(APIView):
     # @api_view(['POST'])
