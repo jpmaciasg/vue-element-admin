@@ -36,7 +36,7 @@ class NewContactAPIView(APIView):
         c=serializer.save()
 
         u= models.User(pk=contact['cu_id'])
-        r=models.ContactUser(cu_contact_id=c, cu_id=u)
+        r=ContactUser(cu_contact_id=c, cu_id=u)
     
         r.save()
 
@@ -89,7 +89,7 @@ class ContactSingleAPIView(APIView):
 
 
         #queryset = models.Contact.objects.all().values('id','contact_fullname','contact_type','contact_email','contact_phone','contact_taxid','contact_byname','contactuser__id','contactuser__cu_contact_id','contactuser__cu_id','contactuser__cu_id__username','contactuser__cu_id__id').filter(id=id)
-        queryset = models.Contact.objects.all().filter(id=id)
+        queryset = Contact.objects.get(id=id)
 
         serializer = ContactSerializer(queryset)
         return Response(serializer.data, status=status.HTTP_200_OK)
