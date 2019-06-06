@@ -86,7 +86,7 @@
               <el-row>
                 <el-col :span="6" class="text item"><span class="single-label">Fecha de pago:</span></el-col>
                 <el-col :span="14">
-                  <el-date-picker v-model="postForm.fac_fechapago" type="date" placeholder="Fecha de pago" class="filter-item" value-format="yyyy-MM-dd" @change="updateInvoicePaymentDate" />
+                  <el-date-picker v-model="postForm.fac_fechapago" type="date" placeholder="Fecha de pago" class="filter-item" value-format="yyyy-MM-dd" @change="updateInvoicePaymentDate" v-bind="isPayedOptionEditable"/>
                 </el-col>
               </el-row>
               <el-row>
@@ -149,7 +149,7 @@
                     <el-row>
                       <el-col :span="6" class="text item"><span class="single-label">Fecha de pago:</span></el-col>
                       <el-col :span="14">
-                        <el-date-picker v-model="inputPaymentDate" type="date" placeholder="Fecha" class="filter-item" value-format="yyyy-MM-dd"/>
+                        <el-date-picker v-model="inputPaymentDate" type="date" placeholder="Fecha" class="filter-item" value-format="yyyy-MM-dd" />
                       </el-col>
                     </el-row>
                     <el-row>
@@ -392,6 +392,7 @@ export default {
       inputComplementos: undefined,
 	inputLog: undefined,
       promotorList: [],
+	userid: 0,
       invoiceClient: {},
       currentRole: '',
 	sumOfPayments: 0,
@@ -459,8 +460,7 @@ export default {
       } else { return {} }
     },
     ...mapGetters([
-      'roles',
-      'userid'
+      'roles'
     ])
   },
   created() {
@@ -490,8 +490,9 @@ export default {
     if (this.roles.includes('supervisor')) {
       this.currentRole = 'supervisor'
     }
-	this.meid=this.userid;
-console.log(this.meid);
+	//console.log(this.$store.state.user.roles);
+	this.userid=this.$store.state.user.userid;
+//console.log('meid'+this.meid);
 
     // Why need to make a copy of this.$route here?
     // Because if you enter this page and quickly switch tag, may be in the execution of the setTagsViewTitle function, this.$route is no longer pointing to the current page

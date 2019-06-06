@@ -307,7 +307,8 @@ export default {
       promotorList: [],
       showPaidInvoices: false,
       currentRole: '',
-      filterPermissions: {}
+      filterPermissions: {},
+	userid : 0
     }
   },
   created() {
@@ -335,6 +336,7 @@ export default {
     }
     this.listQuery=this.filterOptions;
     console.log('uid');
+	this.userid=this.$store.state.user.userid;
     console.log(this.userid);
     this.filterPermissions= this.filterRolePermissions;
   },
@@ -592,8 +594,7 @@ export default {
   },
   computed: {
     ...mapGetters([
-      'roles',
-      'userid'
+      'roles'
     ]),
     enabledPromotorFilter(){
       var r={}
@@ -701,7 +702,7 @@ export default {
         payedrows: ''
     };
       if (this.currentRole== "promotor") {
-        filterOptionsGeneral['promotor']= this.userid;
+        filterOptionsGeneral['promotor']= this.$store.state.user.userid;
         filterOptionsGeneral['pay_1']= false;
         filterOptionsGeneral['pay_2']= true;
         filterOptionsGeneral['pay_3']= false;
