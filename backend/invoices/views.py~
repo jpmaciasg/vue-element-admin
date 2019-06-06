@@ -17,7 +17,6 @@ from django.conf import settings
 from django.contrib.auth.signals import user_logged_in
 #from django.contrib.auth.hashers import make_password
 from rest_framework import viewsets
-from django.shortcuts import render
 from rest_framework.pagination import PageNumberPagination
 import simplejson as json
 from .models import Invoice, InvoiceLog, InvoiceReminders, InvoicePaymentHistory
@@ -29,7 +28,7 @@ from rest_framework.generics import UpdateAPIView, ListCreateAPIView
 import logging
 from rest_framework.authtoken.models import Token
 from users.models import User, Role
-
+from .search import search_queryset 
 # Create your views here.
 
 class UpdateInvoiceAPIView(UpdateAPIView):
@@ -118,67 +117,6 @@ class InvoiceListingAPIView(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-    def search_queryset(self, fromDate, toDate, search, is1, is0, ps1, ps2, ps3, relatedUser, sessionProfile):
-
-        queryset = Invoice.objects.all()
-
-        # Specific search for Promotors
-        if sessionProfile == 3 :
-            queryset = queryset.filter(fac_isactive= True, fac_pagada=2, fac_iduser=relatedUser)
-        else:
-            if relatedUser != 0 :
-                queryset = queryset.filter(fac_iduser = relatedUser)
-
-            if ps1 > 0 or ps2 > 0 or ps3 > 0:
-                q_pay=Q()
-
-                if ps1 > 0:
-                    q_pay |= Q(fac_pagada = 1)
-                if ps2 > 0: 
-                    q_pay |= Q(fac_pagada = 2)
-
-                if ps3 > 0:
-                    q_pay |= Q(fac_pagada = 3)
-
-                queryset=queryset.filter( q_pay )
-
-            if is1 > 0 or is0 > 0:
-                q_act = Q()
-
-                if is1 > 0:
-                    q_act |= Q(fac_isactive = True)
-
-                if is0 > 0:
-                    q_act |= Q(fac_isactive = False)
-
-                queryset = queryset.filter( q_act )
-
-            if fromDate != None or toDate != None :
-                q_date= Q()
-
-                if fromDate != None:
-                    q_date &= Q(fac_fecha__gte=fromDate)
-
-                if toDate != None:
-                    q_date &= Q(fac_fecha__lte=toDate)
-
-                queryset = queryset.filter(q_date)
-
-            if search != '':
-                q_search = Q()
-
-                q_search |= Q(fac_folio__icontains = search)
-                q_search |= Q(fac_receptornombre__icontains = search)
-                q_search |= Q(fac_receptorrfc__icontains = search)
-
-                queryset = queryset.filter( q_search )
-
-
-
-        return queryset
-    
-
-
     def list(self, request):
         #user = Token.objects.get(key='token string').user
 
@@ -186,16 +124,20 @@ class InvoiceListingAPIView(viewsets.ModelViewSet):
         logger.info('Invoice listing')
 
         user=request.user
-        logger.info('user:')
-        logger.info(user)
+        #logger.info('user:')
+        #logger.info(user)
         userrole=user.role_key
-        logger.info('role')
-        logger.info(userrole)
 
+        #logger.info('role')
+        #logger.debug(userrole)
+        print('search role')
+        print(userrole.role_key)
 
         search=request.GET.get('search','')
         fromd=request.GET.get('from','')
         tod=request.GET.get('to','')
+        fromdp=request.GET.get('fromp','')
+        todp=request.GET.get('top','')
         promotor=request.GET.get('promotor','')
         paymentStatus1=request.GET.get('pay_1','')
         paymentStatus2=request.GET.get('pay_2','')
@@ -205,6 +147,9 @@ class InvoiceListingAPIView(viewsets.ModelViewSet):
         activeStatus0=request.GET.get('act_0','')
 
         countrows= request.GET.get('countrows','')
+        sumrows = request.GET.get('sumrows','')
+        payedrows = request.GET.get('payedrows','')
+
         export = request.GET.get('export','')
         currentPage= request.GET.get('page','1')
         resultsPerPage = request.GET.get('limit','')
@@ -212,11 +157,18 @@ class InvoiceListingAPIView(viewsets.ModelViewSet):
 
         startdate=None
         enddate=None
+        startdatep=None
+        enddatep=None
         
         if '' != fromd:
-            startdate = datetime.fromisoformat(fromd) #datetime.strptime(fromd, '%Y-%m-%dT%T.000Z')
+            startdate = datetime.strptime(fromd[0:10], '%Y-%m-%d')
         if '' != tod:
-            enddate = datetime.fromisoformat(tod) #datetime.strptime(tod, '%Y-%m-%dT%T.000Z') + timedelta(minutes=1439)
+            enddate = datetime.strptime(tod[0:10], '%Y-%m-%d') + timedelta(minutes=1439)
+
+        if '' != fromdp:
+            startdatep = datetime.strptime(fromdp[0:10], '%Y-%m-%d')
+        if '' != todp:
+            enddatep = datetime.strptime(todp[0:10], '%Y-%m-%d')
 
         act1=0
         if '' != activeStatus1:
@@ -257,15 +209,15 @@ class InvoiceListingAPIView(viewsets.ModelViewSet):
         if promotor != '':
             prom = int(promotor)
 
-        queryset=self.search_queryset(fromDate=startdate, toDate=enddate,search=search, is1=act1, is0=act0, ps1=pay1, ps2=pay2, ps3=pay3, relatedUser=prom, sessionProfile=userrole)
+        queryset=search_queryset(fromDate=startdate, toDate=enddate,search=search, is1=act1, is0=act0, ps1=pay1, ps2=pay2, ps3=pay3, relatedUser=prom, sessionProfile=userrole, fromDateP=startdatep, toDateP=enddatep)
 
-        page = int(currentPage)
-        perpage = int(resultsPerPage)
-        offset=0
-        offset = (page -1) * perpage
-        total = 0
-        total = perpage
-        total = total + offset
+        #page = int(currentPage)
+        #perpage = int(resultsPerPage)
+        #offset=0
+        #offset = (page -1) * perpage
+        #total = 0
+        #total = perpage
+        #total = total + offset
 
         #queryset=queryset.order_by(sort)[offset:total]
 
@@ -277,12 +229,37 @@ class InvoiceListingAPIView(viewsets.ModelViewSet):
                 result = queryset
 
             return Response(json.dumps(result), status=status.HTTP_200_OK)
+        elif sumrows != '':
+            queryset = queryset.aggregate(s=Sum('fac_total'))
+            s= queryset['s']
+            if None == s:
+                result=0
+            else:
+                result=s
+
+            return Response(json.dumps(result), status=status.HTTP_200_OK)
+        elif payedrows != '':
+            queryset = queryset.aggregate(s=Sum('fac_payments'))
+            s=queryset['s']
+            if None == s:
+                result=0
+            else:
+                result=s
+            return Response(json.dumps(result), status = status.HTTP_200_OK)
         else:
             if export != '':
                 queryset = queryset.order_by(sort)
             else:
+                page = int(currentPage)
+                perpage = int(resultsPerPage)
+                offset=0
+                offset = (page -1) * perpage
+                total = 0
+                total = perpage
+                total = total + offset
                 queryset = queryset.order_by(sort)[offset:total]
-
+            
+            logger.info(queryset.query)
             serializer = InvoiceNoXmlSerializer(queryset, many=True)
         
         return Response(serializer.data)
@@ -339,16 +316,35 @@ class InvoiceIncomeAPIView(APIView):
         # can be JSONified and sent to the client.
         #serializer = self.serializer_class(request.user)
     
-        fromDate = datetime.strptime(request.GET.get('from'),'%Y-%m-%d')
-        toDate = datetime.strptime(request.GET.get('to'),'%Y-%m-%d')
+        fromd=request.GET.get('from','')
+        tod=request.GET.get('to','')
 
-        i=Invoice.objects.filter(fac_fechapago__gte=fromDate, fac_fechapago__lte=toDate+timedelta(minutes=1439), fac_pagada=1, fac_isactive=True).aggregate(s=Sum('fac_total'))
-        income=i['s']
-        if None == income:
-            result=0
+        startdate=None
+        enddate=None
+       
+        if '' != fromd:
+            startdate = datetime.strptime(fromd[0:10], '%Y-%m-%d')
+        if '' != tod:
+            enddate = datetime.strptime(tod[0:10], '%Y-%m-%d') + timedelta(minutes=1439)
+
+        queryset=search_queryset(fromDate=startdate, toDate=enddate,search='', is1=1, is0=0, ps1=1, ps2=0, ps3=0, relatedUser=0, sessionProfile=0, fromDateP=None, toDateP=None)
+
+        queryset = queryset.aggregate(s=Sum('fac_total'))
+        result = queryset['s']
+        r=0
+        if None == result:
+            r =0
         else:
-            result=income
-        return Response(json.dumps(result), status=status.HTTP_200_OK)
+            r = result
+
+        return Response(json.dumps(r), status=status.HTTP_200_OK)
+        #i=Invoice.objects.filter(fac_fechapago__gte=fromDate, fac_fechapago__lte=toDate+timedelta(minutes=1439), fac_pagada=1, fac_isactive=True).aggregate(s=Sum('fac_total'))
+        #income=i['s']
+        #if None == income:
+        #    result=0
+        #else:
+        #    result=income
+        #return Response(json.dumps(result), status=status.HTTP_200_OK)
 
 class InvoiceCountAPIView(APIView):
     # Allow only authenticated users to access this url
@@ -360,17 +356,38 @@ class InvoiceCountAPIView(APIView):
         # can be JSONified and sent to the client.
         #serializer = self.serializer_class(request.user)
     
-        fromDate = datetime.strptime(request.GET.get('from'),'%Y-%m-%d')
-        toDate = datetime.strptime(request.GET.get('to'),'%Y-%m-%d')
+        #fromDate = datetime.strptime(request.GET.get('from'),'%Y-%m-%d')
+        #toDate = datetime.strptime(request.GET.get('to'),'%Y-%m-%d')
+        fromd=request.GET.get('from','')
+        tod=request.GET.get('to','')
 
-        i=Invoice.objects.filter(fac_cdate__gte=fromDate, fac_cdate__lte=toDate+timedelta(minutes=1439)).count()
+        startdate=None
+        enddate=None
+       
+        if '' != fromd:
+            startdate = datetime.strptime(fromd[0:10], '%Y-%m-%d')
+        if '' != tod:
+            enddate = datetime.strptime(tod[0:10], '%Y-%m-%d') + timedelta(minutes=1439)
+
+        queryset=search_queryset(fromDate=startdate, toDate=enddate,search='', is1=1, is0=0, ps1=0, ps2=0, ps3=0, relatedUser=0, sessionProfile=0, fromDateP=None, toDateP=None) 
+        #i=Invoice.objects.filter(fac_cdate__gte=fromDate, fac_cdate__lte=toDate+timedelta(minutes=1439)).count()
         #print(i)
-        #income=i['fac_total']
-        if None == i:
-            result=0
+        #income=i['fac_total']i
+
+        queryset= queryset.count()
+
+        #if None == i:
+        #    result=0
+        #else:
+        #    result=i
+        
+        if None == queryset:
+            result =0
         else:
-            result=i
-        return Response(json.dumps(result), status=status.HTTP_200_OK)
+            result = queryset
+
+        return Response(json.dumps(result), status=status.HTTP_200_OK) 
+        
 
 class FirstUnpaidDateAPIView(APIView):
     # Allow only authenticated users to access this url
@@ -435,12 +452,17 @@ class InvoiceLogListingAPIView(APIView):
     #queryset = User.objects.all().order_by('firstname')
     serializer_class = InvoiceLogSerializer
 
-    def get(self, requesti,*args,**kwargs):
+    def get(self, request,*args,**kwargs):
         id = self.kwargs['id']
         queryset = InvoiceLog.objects.all().filter(log_invoice=int(id)).order_by('-log_datetime')
         
         serializer = InvoiceLogSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def delete(self, request, *args, **kwargs):
+        id = self.kwargs['id']
+        InvoiceLog.objects.all().filter(log_key=int(id)).delete()
+        return Response('', status=status.HTTP_200_OK)
 
 class InvoiceReminderListingAPIView(APIView):
     #permission_classes = (IsAuthenticated,)
@@ -456,9 +478,16 @@ class InvoiceReminderListingAPIView(APIView):
         serializer = InvoiceReminderSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    def delete(self, request, *args, **kwargs):
+        id = self.kwargs['id']
+        InvoiceReminders.objects.all().filter(rem_key=int(id)).delete()
+        return Response(status=status.HTTP_200_OK)
+
+
+
 class InvoicePaymentHistoryListingAPIView(APIView):
-    #permission_classes = (IsAuthenticated,)
-    permission_classes = (AllowAny,)
+    permission_classes = (IsAuthenticated,)
+    #permission_classes = (AllowAny,)
 
     #queryset = User.objects.all().order_by('firstname')
     serializer_class = InvoicePaymentHistorySerializer
@@ -469,6 +498,33 @@ class InvoicePaymentHistoryListingAPIView(APIView):
         
         serializer = InvoicePaymentHistorySerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def delete(self, request, *args, **kwargs):
+        id = self.kwargs['id']
+
+        payment= InvoicePaymentHistory.objects.all().filter(his_key=int(id))
+        if payment:
+            inv = payment[0].his_invoice
+
+            InvoicePaymentHistory.objects.all().filter(his_key=int(id)).delete()
+
+            qs=InvoicePaymentHistory.objects.filter(his_invoice=inv.fac_key).aggregate(s=Sum('his_amount'))
+            payed=qs['s']
+
+            if None == payed:
+                result=0
+            else:
+                result=payed
+
+            #paid=InvoicePaymentHistory.objects.get_sum_payments(id=inv)
+            #print(result)
+            i=Invoice.objects.get(pk=inv)
+            i.fac_payments=result
+            i.save()
+ 
+
+        return Response(status=status.HTTP_200_OK)
+
 
 class InvoiceUpload(APIView):
     parser_class=(FileUploadParser,)
@@ -527,13 +583,22 @@ class NewInvoicePaymentHistory(APIView):
         inv=request.data['his_invoice']
 
         #ph=InvoicePaymentHistory()
-        paid=InvoicePaymentHistory.objects.get_sum_payments(id=inv)
-        print(paid)
+        #iph=Invoice()
+        qs=InvoicePaymentHistory.objects.filter(his_invoice=inv).aggregate(s=Sum('his_amount'))
+        payed=qs['s']
+
+        if None == payed:
+            result=0
+        else:
+            result=payed
+
+        #paid=InvoicePaymentHistory.objects.get_sum_payments(id=inv)
+        #print(result)
         i=Invoice.objects.get(pk=inv)
-        i.fac_payments=paid
+        i.fac_payments=result
         i.save()
 
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.data, status=status.HTTP_200_OK) #1_CREATED)
 
 def jwt_response_payload_handler(token, user=None, request=None):
     return {

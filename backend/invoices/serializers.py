@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Invoice, InvoiceLog, InvoiceReminders, InvoicePaymentHistory
+from users.models import User
  
  
 class InvoiceSerializer(serializers.ModelSerializer):
@@ -27,7 +28,16 @@ class InvoiceSerializer(serializers.ModelSerializer):
     #fac_pagada= serializers.IntegerField(read_only=True)
     #fac_complemento= serializers.CharField(read_only=True)
     #fac_idclient= serializers.IntegerField(read_only=True)
-    #fac_iduser= serializers.IntegerField(read_only=True)
+    fac_iduser= serializers.PrimaryKeyRelatedField(
+            queryset= User.objects.all(),
+            required= False,
+            allow_null=True
+            #write_only=False
+    )
+
+    first_name = serializers.CharField(source = 'fac_iduser.first_name', read_only=True)
+    last_name = serializers.CharField(source = 'fac_iduser.last_name', read_only = True)
+    username = serializers.CharField(source = 'fac_iduser.username', read_only = True)
  
     class Meta(object):
         model = Invoice
@@ -36,9 +46,9 @@ class InvoiceSerializer(serializers.ModelSerializer):
                   'fac_observaciones', 'fac_fechapago', 'fac_fecha',
                   'fac_cdate', 'fac_subtotal', 'fac_iva', 'fac_payments', 
                   'fac_isactive', 'fac_contact', 'fac_lastreminder', 'fac_pagada',
-                  'fac_complemento', 'fac_idclient','fac_iduser')
+                  'fac_complemento', 'fac_idclient','fac_iduser', 'first_name', 'last_name', 'username')
 
-        datatables_always_serialize = ('fac_key')
+        datatables_always_serialize = ('fac_key','fac_iduser')
 
 class InvoiceNoXmlSerializer(serializers.ModelSerializer):
  
@@ -46,6 +56,16 @@ class InvoiceNoXmlSerializer(serializers.ModelSerializer):
     fac_key = serializers.IntegerField(read_only=True)
     fac_debt = serializers.ReadOnlyField()
     fac_pagadatext=serializers.ReadOnlyField()
+    fac_iduser= serializers.PrimaryKeyRelatedField(
+            queryset= User.objects.all(),
+            required= False,
+            allow_null=True
+            #write_only=False
+    )
+
+    first_name = serializers.CharField(source = 'fac_iduser.first_name', read_only=True)
+    last_name = serializers.CharField(source = 'fac_iduser.last_name', read_only = True)
+    username = serializers.CharField(source = 'fac_iduser.username', read_only = True)
  
     class Meta(object):
         model = Invoice
@@ -54,9 +74,9 @@ class InvoiceNoXmlSerializer(serializers.ModelSerializer):
                   'fac_observaciones', 'fac_fechapago', 'fac_fecha',
                   'fac_cdate', 'fac_subtotal', 'fac_iva', 'fac_payments', 
                   'fac_isactive', 'fac_contact', 'fac_lastreminder', 'fac_pagada', 'fac_debt','fac_pagadatext',
-                  'fac_complemento', 'fac_idclient','fac_iduser')
+                  'fac_complemento', 'fac_idclient','fac_iduser', 'first_name', 'last_name', 'username')
 
-        datatables_always_serialize = ('fac_key',)
+        datatables_always_serialize = ('fac_key','fac_iduser')
 
 
 class InvoiceLogSerializer(serializers.ModelSerializer):
@@ -67,14 +87,24 @@ class InvoiceLogSerializer(serializers.ModelSerializer):
     log_invoice=serializers.PrimaryKeyRelatedField(
             queryset=Invoice.objects.all(),
             required=True,
+            write_only=False,
+            allow_null=True
+    )
+
+    log_cuser = serializers.PrimaryKeyRelatedField(
+            queryset = User.objects.all(),
+            required= False,
             write_only=False
     )
+    first_name = serializers.CharField(source = 'log_iduser.first_name', read_only=True)
+    last_name = serializers.CharField(source = 'log_iduser.last_name', read_only = True)
+    username = serializers.CharField(source = 'log_iduser.username', read_only = True)
 
     class Meta(object):
         model = InvoiceLog
-        fields = ('log_key','log_text','log_datetime', 'log_invoice', 'log_invoice', )
+        fields = ('log_key','log_text','log_datetime', 'log_invoice', 'log_invoice', 'log_cuser', 'first_name','last_name','username',)
 
-        datatables_always_serialize = ('log_key',)
+        datatables_always_serialize = ('log_key','log_cuser',)
 
 class InvoiceReminderSerializer(serializers.ModelSerializer):
  
@@ -86,12 +116,29 @@ class InvoiceReminderSerializer(serializers.ModelSerializer):
             required=True,
             write_only=False
     )
- 
-    class Meta(object):
-        model = InvoiceReminders
-        fields = ('rem_key','rem_invoice','rem_text', 'rem_datetime',  'rem_isactive')
+    rem_cuser = serializers.PrimaryKeyRelatedField(
+            queryset= User.objects.all(),
+            required= False,
+            write_only=False,
+            allow_null=True
+    )
 
-        datatables_always_serialize = ('rem_key',)
+    first_name = serializers.CharField(source = 'log_iduser.first_name', read_only=True)
+    last_name = serializers.CharField(source = 'log_iduser.last_name', read_only = True)
+    username = serializers.CharField(source = 'log_iduser.username', read_only = True)
+
+
+    class Meta(object):
+        model = Invoice
+        fields = ('fac_key','fac_serie','fac_folio', 'fac_emisorrfc', 'fac_emisornombre',
+                  'fac_receptorrfc', 'fac_receptornombre', 'fac_total','fac_xml',
+                  'fac_observaciones', 'fac_fechapago', 'fac_fecha',
+                  'fac_cdate', 'fac_subtotal', 'fac_iva', 'fac_payments',
+                  'fac_isactive', 'fac_contact', 'fac_lastreminder', 'fac_pagada',
+                  'fac_complemento', 'fac_idclient','fac_iduser', 'first_name','last_name','username',)
+
+        datatables_always_serialize = ('fac_key')
+
 
 class InvoicePaymentHistorySerializer(serializers.ModelSerializer):
  

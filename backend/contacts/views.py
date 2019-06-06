@@ -88,8 +88,8 @@ class ContactSingleAPIView(APIView):
         id = self.kwargs['id']
 
 
-        queryset = models.Contact.objects.all().values('id','contact_fullname','contact_type','contact_email','contact_phone','contact_taxid','contact_byname','contactuser__id','contactuser__cu_contact_id','contactuser__cu_id','contactuser__cu_id__username','contactuser__cu_id__id').filter(id=id)
-        
+        #queryset = models.Contact.objects.all().values('id','contact_fullname','contact_type','contact_email','contact_phone','contact_taxid','contact_byname','contactuser__id','contactuser__cu_contact_id','contactuser__cu_id','contactuser__cu_id__username','contactuser__cu_id__id').filter(id=id)
+        queryset = models.Contact.objects.all().filter(id=id)
 
         serializer = ContactSerializer(queryset)
         return Response(serializer.data, status=status.HTTP_200_OK)

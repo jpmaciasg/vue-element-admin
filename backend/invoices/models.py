@@ -150,6 +150,13 @@ class Invoice (models.Model):
             if tag =='Receptor':
                 inv['fac_receptorrfc']=child.get(atReceptorRfc)
                 inv['fac_receptornombre']=child.get(atReceptorNombre)
+            if tag == 'Impuestos':
+                for child2 in child:
+                    for child3 in child2:
+                        impuesto= child3.get('Impuesto')
+                        if impuesto == '002':
+                            inv['fac_iva']=child3.get('Importe')
+
 
         inv['fac_key']=None
         inv['fac_idclient']=None
@@ -164,6 +171,16 @@ class Invoice (models.Model):
                 cu=ContactUser.objects.get(cu_contact_id=client)
                 inv['fac_iduser']=cu.cu_id
         
+        else:
+            cdata = {}
+            cdata['contact_fullname']=inv['fac_receptornombre']
+            cdata['contact_taxid']=inv['fac_receptorrfc']
+            cdata['contact_type']='company'
+            c=Contact(**cdata)
+            c.save()
+
+            inv['fac_idclient']=c.id
+
     
 
         i=Invoice(**inv)
@@ -218,11 +235,13 @@ class InvoiceLog(models.Model):
     #log_invoice = models.IntegerField(null = False)
     log_text =models.TextField(null=False, blank=False)
     log_datetime = models.DateTimeField(null=False, blank=False, auto_now_add=True)
-    log_invoice = models.ForeignKey(Invoice, to_field= 'fac_key', db_column = 'log_invoice', on_delete = '') 
+    log_invoice = models.ForeignKey(Invoice, to_field= 'fac_key', db_column = 'log_invoice', on_delete = '')
+    log_cuser = models.ForeignKey(User, to_field = 'id', db_column = 'log_cuser', on_delete = '', blank=True, null=True)
 
     class Meta:
        managed = False
        db_table = 'cbr_bitacoras'
+       ordering = ['log_datetime', 'log_cuser', 'log_cuser__first_name', 'log_cuser__last_name']
 
 
 class InvoiceReminders(models.Model):
@@ -231,6 +250,7 @@ class InvoiceReminders(models.Model):
     rem_text =models.TextField(null=False, blank=False)
     rem_datetime = models.DateTimeField(null=False, blank=False)
     rem_isactive  =models.BooleanField(null=False, default= True)
+    rem_cuser = models.ForeignKey(User, to_field='id', db_column = 'rem_cuser', on_delete = '', blank = True, null = True)
 
     class Meta:
        managed = False

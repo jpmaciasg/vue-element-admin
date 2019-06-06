@@ -116,9 +116,9 @@ class ContactListingAPIView(viewsets.ModelViewSet):
             sort='contact_fullname'
 
         #queryset= ContactUser.objetcts.all()
-        queryset = Contact.objects.all().values('id','contact_fullname','contact_type','contact_email','contact_phone','contact_taxid','contact_byname','contactuser__id','contactuser__cu_contact_id','contactuser__cu_id','contactuser__cu_id__username','contactuser__cu_id__id').order_by(sort)
+        queryset = Contact.objects.all().values('id','contact_fullname','contact_type','contact_email','contact_phone','contact_taxid','contact_byname','contactuser__id','contactuser__cu_contact_id','contactuser__cu_id','contactuser__cu_id__username','contactuser__cu_id__id').order_by(sort)[:100]
         #Employee.objects.all().values('id','name','company__name')
-        print(queryset)
+        #print(queryset)
         serializer = ContactListSerializer(queryset, many=True)
         return Response(serializer.data)
 '''

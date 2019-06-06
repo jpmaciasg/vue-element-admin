@@ -197,6 +197,11 @@ LOGGING = {
             'class': 'logging.FileHandler',
             'filename': '/var/www/sites/cobranza/log/debug.log',
         },
+        'file1': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename' : '/var/www/sites/cobranza/log/debug.log',
+        },
     },
     'loggers': {
         'django': {

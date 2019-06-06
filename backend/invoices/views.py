@@ -124,12 +124,15 @@ class InvoiceListingAPIView(viewsets.ModelViewSet):
         logger.info('Invoice listing')
 
         user=request.user
-        logger.info('user:')
-        logger.info(user)
-        userrole=user.role_key
-        logger.info('role')
-        logger.info(userrole)
+        #logger.info('user:')
+        #logger.info(user)
+        urole=user.role_key
 
+        #logger.info('role')
+        #logger.debug(userrole)
+        #print('search role')
+        #print(urole.role_key)
+        userrole=urole.role_key
 
         search=request.GET.get('search','')
         fromd=request.GET.get('from','')
@@ -145,6 +148,9 @@ class InvoiceListingAPIView(viewsets.ModelViewSet):
         activeStatus0=request.GET.get('act_0','')
 
         countrows= request.GET.get('countrows','')
+        sumrows = request.GET.get('sumrows','')
+        payedrows = request.GET.get('payedrows','')
+
         export = request.GET.get('export','')
         currentPage= request.GET.get('page','1')
         resultsPerPage = request.GET.get('limit','')
@@ -206,13 +212,13 @@ class InvoiceListingAPIView(viewsets.ModelViewSet):
 
         queryset=search_queryset(fromDate=startdate, toDate=enddate,search=search, is1=act1, is0=act0, ps1=pay1, ps2=pay2, ps3=pay3, relatedUser=prom, sessionProfile=userrole, fromDateP=startdatep, toDateP=enddatep)
 
-        page = int(currentPage)
-        perpage = int(resultsPerPage)
-        offset=0
-        offset = (page -1) * perpage
-        total = 0
-        total = perpage
-        total = total + offset
+        #page = int(currentPage)
+        #perpage = int(resultsPerPage)
+        #offset=0
+        #offset = (page -1) * perpage
+        #total = 0
+        #total = perpage
+        #total = total + offset
 
         #queryset=queryset.order_by(sort)[offset:total]
 
@@ -224,10 +230,34 @@ class InvoiceListingAPIView(viewsets.ModelViewSet):
                 result = queryset
 
             return Response(json.dumps(result), status=status.HTTP_200_OK)
+        elif sumrows != '':
+            queryset = queryset.aggregate(s=Sum('fac_total'))
+            s= queryset['s']
+            if None == s:
+                result=0
+            else:
+                result=s
+
+            return Response(json.dumps(result), status=status.HTTP_200_OK)
+        elif payedrows != '':
+            queryset = queryset.aggregate(s=Sum('fac_payments'))
+            s=queryset['s']
+            if None == s:
+                result=0
+            else:
+                result=s
+            return Response(json.dumps(result), status = status.HTTP_200_OK)
         else:
             if export != '':
                 queryset = queryset.order_by(sort)
             else:
+                page = int(currentPage)
+                perpage = int(resultsPerPage)
+                offset=0
+                offset = (page -1) * perpage
+                total = 0
+                total = perpage
+                total = total + offset
                 queryset = queryset.order_by(sort)[offset:total]
             
             logger.info(queryset.query)
@@ -423,12 +453,17 @@ class InvoiceLogListingAPIView(APIView):
     #queryset = User.objects.all().order_by('firstname')
     serializer_class = InvoiceLogSerializer
 
-    def get(self, requesti,*args,**kwargs):
+    def get(self, request,*args,**kwargs):
         id = self.kwargs['id']
         queryset = InvoiceLog.objects.all().filter(log_invoice=int(id)).order_by('-log_datetime')
         
         serializer = InvoiceLogSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def delete(self, request, *args, **kwargs):
+        id = self.kwargs['id']
+        InvoiceLog.objects.all().filter(log_key=int(id)).delete()
+        return Response('', status=status.HTTP_200_OK)
 
 class InvoiceReminderListingAPIView(APIView):
     #permission_classes = (IsAuthenticated,)
@@ -444,9 +479,16 @@ class InvoiceReminderListingAPIView(APIView):
         serializer = InvoiceReminderSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    def delete(self, request, *args, **kwargs):
+        id = self.kwargs['id']
+        InvoiceReminders.objects.all().filter(rem_key=int(id)).delete()
+        return Response(status=status.HTTP_200_OK)
+
+
+
 class InvoicePaymentHistoryListingAPIView(APIView):
-    #permission_classes = (IsAuthenticated,)
-    permission_classes = (AllowAny,)
+    permission_classes = (IsAuthenticated,)
+    #permission_classes = (AllowAny,)
 
     #queryset = User.objects.all().order_by('firstname')
     serializer_class = InvoicePaymentHistorySerializer
@@ -457,6 +499,33 @@ class InvoicePaymentHistoryListingAPIView(APIView):
         
         serializer = InvoicePaymentHistorySerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def delete(self, request, *args, **kwargs):
+        id = self.kwargs['id']
+
+        payment= InvoicePaymentHistory.objects.all().filter(his_key=int(id))
+        if payment:
+            inv = payment[0].his_invoice
+
+            InvoicePaymentHistory.objects.all().filter(his_key=int(id)).delete()
+
+            qs=InvoicePaymentHistory.objects.filter(his_invoice=inv.fac_key).aggregate(s=Sum('his_amount'))
+            payed=qs['s']
+
+            if None == payed:
+                result=0
+            else:
+                result=payed
+
+            #paid=InvoicePaymentHistory.objects.get_sum_payments(id=inv)
+            #print(result)
+            i=Invoice.objects.get(pk=inv)
+            i.fac_payments=result
+            i.save()
+ 
+
+        return Response(status=status.HTTP_200_OK)
+
 
 class InvoiceUpload(APIView):
     parser_class=(FileUploadParser,)
@@ -515,13 +584,22 @@ class NewInvoicePaymentHistory(APIView):
         inv=request.data['his_invoice']
 
         #ph=InvoicePaymentHistory()
-        paid=InvoicePaymentHistory.objects.get_sum_payments(id=inv)
-        print(paid)
+        #iph=Invoice()
+        qs=InvoicePaymentHistory.objects.filter(his_invoice=inv).aggregate(s=Sum('his_amount'))
+        payed=qs['s']
+
+        if None == payed:
+            result=0
+        else:
+            result=payed
+
+        #paid=InvoicePaymentHistory.objects.get_sum_payments(id=inv)
+        #print(result)
         i=Invoice.objects.get(pk=inv)
-        i.fac_payments=paid
+        i.fac_payments=result
         i.save()
 
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.data, status=status.HTTP_200_OK) #1_CREATED)
 
 def jwt_response_payload_handler(token, user=None, request=None):
     return {

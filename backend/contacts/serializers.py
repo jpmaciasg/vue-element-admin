@@ -8,11 +8,13 @@ class ContactSerializer(serializers.ModelSerializer):
  
     #date_joined = serializers.ReadOnlyField()
     id = serializers.IntegerField(read_only=True)
+    contact_type = serializers.CharField(read_only=True)
     
  
     class Meta(object):
         model = Contact
-        fields = ('id','contact_firstname' ,
+        fields = ('id',
+            'contact_firstname' ,
             'contact_lastname' ,
             'contact_type' ,
             'contact_fullname',
@@ -50,7 +52,9 @@ class ContactListSerializer(serializers.ModelSerializer):
 
     class Meta(object):
         model = Contact
-        fields = ('id','contact_firstname' ,
+        fields = (
+            'id',
+            'contact_firstname' ,
             'contact_lastname' ,
             'contact_type' ,
             'contact_fullname',
@@ -63,7 +67,7 @@ class ContactListSerializer(serializers.ModelSerializer):
             'contact_phone','contactuser__cu_id__username'
         )
 
-        datatables_always_serialize = ('id',)
+        datatables_always_serialize = ('id','contact_type')
 
         depth = 3
     

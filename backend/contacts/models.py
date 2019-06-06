@@ -16,11 +16,12 @@ class Contact (models.Model):
     contact_email = models.TextField(null=True, blank=True) # Will be moved to profile
     contact_taxid = models.TextField(null=True, blank=True) # Will be moved to profile
     contact_phone = models.TextField(null=True, blank=True) # Will be moved to profile
+    contact_comment = models.TextField(null=True, blank=True)
     #Profile = JSONField()
 
     class Meta:
         db_table = 'contact'
-        ordering = ['contact_firstname','contact_lastname','contact_fullname','contact_taxid','contact_email']
+        ordering = ['contact_firstname','contact_lastname','contact_fullname','contact_taxid','contact_email', 'contact_type']
 
 class ContactUser (models.Model):
     id = models.AutoField(primary_key=True)

@@ -35,6 +35,24 @@ class Invoice (models.Model):
     #fac_iduser= models.IntegerField(null = True, default=0)
     fac_iduser=models.ForeignKey(User, to_field='id', db_column = 'fac_iduser', on_delete = '', null=True, blank=True)
 
+    @property
+    def fac_debt(self):
+        return self.fac_total - self.fac_payments
+
+    @property
+    def fac_pagadatext(self):
+        ret=''
+        if self.fac_pagada==1:
+            ret='PAGADA'
+        elif self.fac_pagada==2:
+            ret='NO PAGADA'
+        elif self.fac_pagada==3:
+            ret='CONFIRMAR'
+
+        return ret
+
+
+
     class Meta:
         managed = False
         db_table = 'cbr_facturas'
@@ -43,23 +61,6 @@ class Invoice (models.Model):
             models.Index(fields=['fac_idclient','fac_iduser']),
         ]
 
-    def search_queryset(self, fromDate, toDate, search, invoiceStatus, paymentStatus, relatedUser, sessionProfile):
-
-        queryset = self
-
-        # Specific search for Promotors
-        if sessionProfile == 3 :
-            queryset = queryset.filter(fac_isactive= True, fac_pagada=2, fac_iduser=relatedUser)
-        else:
-            if relatedUser != 0 :
-                queryset = queryset.filter(fac_iduser = relatedUser)
-
-
-
-
-        return queryset
-
-    
     def missing_invoices(self):
         r = connection.cursor()
 
@@ -217,11 +218,13 @@ class InvoiceLog(models.Model):
     #log_invoice = models.IntegerField(null = False)
     log_text =models.TextField(null=False, blank=False)
     log_datetime = models.DateTimeField(null=False, blank=False, auto_now_add=True)
-    log_invoice = models.ForeignKey(Invoice, to_field= 'fac_key', db_column = 'log_invoice', on_delete = '') 
+    log_invoice = models.ForeignKey(Invoice, to_field= 'fac_key', db_column = 'log_invoice', on_delete = '')
+    log_cuser = models.ForeignKey(User, to_field = 'id', db_column = 'log_cuser', on_delete = '', blank=True, null=True)
 
     class Meta:
        managed = False
        db_table = 'cbr_bitacoras'
+       ordering = ['log_datetime', 'log_cuser', 'log_cuser__first_name', 'log_cuser__last_name']
 
 
 class InvoiceReminders(models.Model):
@@ -230,6 +233,7 @@ class InvoiceReminders(models.Model):
     rem_text =models.TextField(null=False, blank=False)
     rem_datetime = models.DateTimeField(null=False, blank=False)
     rem_isactive  =models.BooleanField(null=False, default= True)
+    rem_cuser = models.ForeignKey(User, to_field='id', db_column = 'rem_cuser', on_delete = '', blank = True, null = True)
 
     class Meta:
        managed = False
