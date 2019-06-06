@@ -33,7 +33,7 @@ export function createArticle(data) {
 
 export function updateContact(id, data) {
   return request({
-    url: '/contact/' + id,
+    url: '/contact/update/' + id,
     method: 'put',
     data
   })

@@ -52,7 +52,7 @@
             </el-card>
           </el-col>
           <el-col :span="12">
-            <el-card class="box-card" style="height: 268px;">
+            <el-card class="box-card" style="">
 
               <el-row>
 &nbsp;
@@ -692,7 +692,7 @@ export default {
       })
     },
     doSaveClient(){
-      updateContact(this.postFormClient.id, this.recoverFormClient).then(response => {
+      updateContact(this.postFormClient.id, this.postFormClient).then(response => {
         this.recoverFormClient = Object.assign({}, this.postFormClient)
         this.$notify({
           title: 'Actualizar',
