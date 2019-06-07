@@ -22,6 +22,9 @@ import simplejson as json
 from .models import Contact
 from django.db.models import Avg, Count, Min, Sum
 from . import models
+from rest_framework.generics import UpdateAPIView, ListCreateAPIView
+import logging
+
 # Create your views here.
 
 class NewContactAPIView(APIView):

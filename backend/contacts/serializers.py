@@ -24,7 +24,8 @@ class ContactSerializer(serializers.ModelSerializer):
             'contact_address',
             'contact_email',
             'contact_taxid',
-            'contact_phone'
+            'contact_phone',
+            'contact_comment'
         )
 
         datatables_always_serialize = ('id',)
