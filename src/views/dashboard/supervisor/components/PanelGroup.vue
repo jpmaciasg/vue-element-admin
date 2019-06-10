@@ -85,7 +85,7 @@ export default {
       var dateObject = new Date()
       var month = dateObject.getMonth() + 1
       var year = this.yearNow
-      var d = new Date(year, month + 1, 0)
+      var d = new Date(year, month, 0)
 
       var dd = d.getDate()
       return dd

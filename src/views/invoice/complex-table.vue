@@ -657,8 +657,8 @@ export default {
       }
       if (this.currentRole== "operator") {
         permissionsGeneral['promotor']= true;
-        permissionsGeneral['pay_1']= false;
-        permissionsGeneral['pay_2']= false;
+        permissionsGeneral['pay_1']= true;
+        permissionsGeneral['pay_2']= true;
         permissionsGeneral['pay_3']= false;
         permissionsGeneral['act_0']= false;
         permissionsGeneral['act_1']= false;

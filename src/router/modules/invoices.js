@@ -30,7 +30,7 @@ const invoiceRouter = {
     {
       path: 'missing',
       component: () => import('@/views/invoice/drag-table'),
-      name: 'DragTable',
+      name: 'MissingInvoices',
       meta: { title: 'Faltantes' }
     },
     {

@@ -127,3 +127,10 @@ export function addInvoiceLog(data) {
     data
   })
 }
+
+export function getMissingInvoices() {
+	return request({
+		url: '/invoice/missing',
+		method: 'get'
+	})
+}
