@@ -67,7 +67,20 @@
       </el-button>
 
     </div>
-
+    <el-row>
+      <el-col :span="6">
+  &nbsp;
+      </el-col>
+      <el-col :span="6">
+        <span class="filter-item">Total: {{ suma }} </span>
+      </el-col>
+      <el-col :span="6">
+        <span class="filter-item">Pagos: {{ pagado }}</span>
+      </el-col>
+      <el-col :span="6">
+        <span class="filter-item">Pendiente: {{ suma - pagado }}</span>
+      </el-col>
+    </el-row>
     <el-table
       :key="tableKey"
       v-loading="listLoading"
@@ -570,8 +583,8 @@ export default {
         }, 1.5 * 1000) */
 
         import('@/vendor/Export2Excel').then(excel => {
-          const tHeader = ['FACTURA', 'FECHA', 'CLIENTE', 'RFC', 'TOTAL', 'PAGADO', 'DEUDA', 'ESTATUS']
-          const filterVal = ['fac_folio', 'fac_fecha', 'fac_receptornombre', 'fac_receptorrfc', 'fac_total', 'fac_payments', 'fac_debt', 'fac_pagadatext', 'fac_username']
+          const tHeader = ['FECHA', 'FACTURA', 'CLIENTE', 'RFC','SUBTOTAL','IVA' ,'TOTAL', 'PAGADO', 'ESTADO','ESTATUS','DEUDA', 'PROMOTOR']
+          const filterVal = ['fac_fecha' ,'fac_folio', 'fac_receptornombre', 'fac_receptorrfc', 'fac_subtotal','fac_iva','fac_total', 'fac_payments','fac_pagadatext','fac_isactive', 'fac_debt', 'username']
           const data = this.formatJson(filterVal, dlist)
           excel.export_json_to_excel({
             header: tHeader,
