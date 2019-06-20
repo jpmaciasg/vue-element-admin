@@ -1,13 +1,13 @@
 <template>
   <div class="missing-container">
-<el-row>
-<template v-for="r in missing">
-<el-card class="box-card" style="width: 130px;float:left;margin:10px;">
-                <div class="single-label">{{ r.fac_serie }} {{ r.fac_folio }}<br></div>
-</el-card>
-</template>
-</el-row>
-</div>
+    <el-row>
+      <template v-for="r in missing">
+        <el-card class="box-card" style="width: 130px;float:left;margin:10px;">
+          <div class="single-label">{{ r.fac_serie }} {{ r.fac_folio }}<br></div>
+        </el-card>
+      </template>
+    </el-row>
+  </div>
 
 </template>
 
@@ -18,23 +18,23 @@ export default {
   name: 'MissingInvoices',
   data() {
     return {
-	missing: [],
-	listLoading : false
+      missing: [],
+      listLoading: false
     }
   },
   created() {
-//console.log('created');
+    // console.log('created');
     this.getMissingList()
   },
   methods: {
     getMissingList() {
-      this.listLoading = true;
-console.log('antes mis');
-	getMissingInvoices().then(response => {
-	console.log(response.data);
-		this.missing=JSON.parse(response.data);
+      this.listLoading = true
+      console.log('antes mis')
+      getMissingInvoices().then(response => {
+        console.log(response.data)
+        this.missing = JSON.parse(response.data)
       		this.listLoading = false
-	}).catch(err => {
+      }).catch(err => {
         console.log(err)
 
         this.$notify({
@@ -44,7 +44,7 @@ console.log('antes mis');
           duration: 2000
         })
       })
-    },
+    }
   }
 }
 </script>

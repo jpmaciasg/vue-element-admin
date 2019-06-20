@@ -52,27 +52,27 @@ export function fetchPaymentsHistoryList(id) {
   })
 }
 
-export function fetchLogs(id){
-	return request({
-		url: 'invoice/log/' + id,
-		method: 'get'
-	})
-}
-
-export function deletePayment(id){
+export function fetchLogs(id) {
   return request({
-		url: 'invoice/history/' + id,
-		method: 'delete'
-	})
-}
-export function deleteLog(id){
-	return request({
-		url: 'invoice/log/' + id,
-		method: 'delete'
-	})
+    url: 'invoice/log/' + id,
+    method: 'get'
+  })
 }
 
-/*export function fetchArticle(id) {
+export function deletePayment(id) {
+  return request({
+    url: 'invoice/history/' + id,
+    method: 'delete'
+  })
+}
+export function deleteLog(id) {
+  return request({
+    url: 'invoice/log/' + id,
+    method: 'delete'
+  })
+}
+
+/* export function fetchArticle(id) {
   return request({
     url: '/invoice/detail',
     method: 'get',
@@ -129,8 +129,8 @@ export function addInvoiceLog(data) {
 }
 
 export function getMissingInvoices() {
-	return request({
-		url: '/invoice/missing',
-		method: 'get'
-	})
+  return request({
+    url: '/invoice/missing',
+    method: 'get'
+  })
 }

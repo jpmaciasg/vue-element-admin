@@ -16,9 +16,9 @@
 
       <span class="filter-item" style="font-weight: bold">Pagos: </span>
       <!-- <el-checkbox-group class="filter-item"> -->
-      <el-checkbox v-model="listQuery.pay_1" label="Pagada" class="filter-item" v-bind="enabledP1Filter"/>
-      <el-checkbox v-model="listQuery.pay_3" label="Por confirmar" class="filter-item" v-bind="enabledP3Filter"/>
-      <el-checkbox v-model="listQuery.pay_2" label="No pagada" class="filter-item" v-bind="enabledP2Filter"/>
+      <el-checkbox v-model="listQuery.pay_1" label="Pagada" class="filter-item" v-bind="enabledP1Filter" />
+      <el-checkbox v-model="listQuery.pay_3" label="Por confirmar" class="filter-item" v-bind="enabledP3Filter" />
+      <el-checkbox v-model="listQuery.pay_2" label="No pagada" class="filter-item" v-bind="enabledP2Filter" />
 
       <!-- </el-checkbox-group> -->
 
@@ -32,8 +32,8 @@
 
       &nbsp;&nbsp;&nbsp;<span class="filter-item" style="font-weight: bold">Estado: </span>
       <!-- <el-checkbox-group class="filter-item"> -->
-      <el-checkbox v-model="listQuery.act_1" label="Activa" class="filter-item" v-bind="enabledA1Filter"/>
-      <el-checkbox v-model="listQuery.act_0" label="Cancelada" class="filter-item" v-bind="enabledA0Filter"/>
+      <el-checkbox v-model="listQuery.act_1" label="Activa" class="filter-item" v-bind="enabledA1Filter" />
+      <el-checkbox v-model="listQuery.act_0" label="Cancelada" class="filter-item" v-bind="enabledA0Filter" />
       <!--  </el-checkbox-group> -->
       <!--
     </el-checkbox-group>
@@ -308,7 +308,7 @@ export default {
       showPaidInvoices: false,
       currentRole: '',
       filterPermissions: {},
-	userid : 0
+      userid: 0
     }
   },
   created() {
@@ -334,11 +334,11 @@ export default {
     if (this.roles.includes('supervisor')) {
       this.currentRole = 'supervisor'
     }
-    this.listQuery=this.filterOptions;
-    console.log('uid');
-	this.userid=this.$store.state.user.userid;
-    console.log(this.userid);
-    this.filterPermissions= this.filterRolePermissions;
+    this.listQuery = this.filterOptions
+    console.log('uid')
+    this.userid = this.$store.state.user.userid
+    console.log(this.userid)
+    this.filterPermissions = this.filterRolePermissions
   },
   methods: {
     getMinDate() {
@@ -420,7 +420,7 @@ export default {
       })
     },
     handleReset() {
-      /*var r = {
+      /* var r = {
         page: 1,
         limit: 20,
         promotor: undefined,
@@ -440,7 +440,7 @@ export default {
         sumrows: '',
         payedrows: ''
       }*/
-      this.listQuery = this.filterOptions;
+      this.listQuery = this.filterOptions
       // this.listQuery.page = 1
       this.getTotalRows()
     },
@@ -596,92 +596,92 @@ export default {
     ...mapGetters([
       'roles'
     ]),
-    enabledPromotorFilter(){
-      var r={}
-      if (this.filterPermissions['promotor'] == false){
-        r={[`disabled`]: true};
+    enabledPromotorFilter() {
+      var r = {}
+      if (this.filterPermissions['promotor'] == false) {
+        r = { [`disabled`]: true }
       }
-      return r;
+      return r
     },
-    enabledP1Filter(){
-      var r={}
-      if (this.filterPermissions['pay_1'] == false){
-        r={[`disabled`]: true};
+    enabledP1Filter() {
+      var r = {}
+      if (this.filterPermissions['pay_1'] == false) {
+        r = { [`disabled`]: true }
       }
-      return r;
+      return r
     },
-    enabledP2Filter(){
-      var r={}
-      if (this.filterPermissions['pay_2'] == false){
-        r={[`disabled`]: true};
+    enabledP2Filter() {
+      var r = {}
+      if (this.filterPermissions['pay_2'] == false) {
+        r = { [`disabled`]: true }
       }
-      return r;
+      return r
     },
-    enabledP3Filter(){
-      var r={}
-      if (this.filterPermissions['pay_3'] == false){
-        r={[`disabled`]: true};
+    enabledP3Filter() {
+      var r = {}
+      if (this.filterPermissions['pay_3'] == false) {
+        r = { [`disabled`]: true }
       }
-      return r;
+      return r
     },
-    enabledA0Filter(){
-      var r={}
-      if (this.filterPermissions['act_0'] == false){
-        r={[`disabled`]: true};
+    enabledA0Filter() {
+      var r = {}
+      if (this.filterPermissions['act_0'] == false) {
+        r = { [`disabled`]: true }
       }
-      return r;
+      return r
     },
-    enabledA1Filter(){
-      var r={}
-      if (this.filterPermissions['act_1'] == false){
-        r={[`disabled`]: true};
+    enabledA1Filter() {
+      var r = {}
+      if (this.filterPermissions['act_1'] == false) {
+        r = { [`disabled`]: true }
       }
-      return r;
+      return r
     },
-    filterRolePermissions(){
-      var permissionsGeneral= {
+    filterRolePermissions() {
+      var permissionsGeneral = {
         promotor: true,
         pay_1: true,
         pay_2: true,
         pay_3: true,
         act_1: true,
-        act_0: true,
-    };
-      if (this.currentRole== "promotor") {
-        permissionsGeneral['promotor']= false;
-        permissionsGeneral['pay_1']= false;
-        permissionsGeneral['pay_2']= false;
-        permissionsGeneral['pay_3']= false;
-        permissionsGeneral['act_0']= false;
-        permissionsGeneral['act_1']= false;
+        act_0: true
       }
-      if (this.currentRole== "operator") {
-        permissionsGeneral['promotor']= true;
-        permissionsGeneral['pay_1']= true;
-        permissionsGeneral['pay_2']= true;
-        permissionsGeneral['pay_3']= false;
-        permissionsGeneral['act_0']= false;
-        permissionsGeneral['act_1']= false;
+      if (this.currentRole == 'promotor') {
+        permissionsGeneral['promotor'] = false
+        permissionsGeneral['pay_1'] = false
+        permissionsGeneral['pay_2'] = false
+        permissionsGeneral['pay_3'] = false
+        permissionsGeneral['act_0'] = false
+        permissionsGeneral['act_1'] = false
+      }
+      if (this.currentRole == 'operator') {
+        permissionsGeneral['promotor'] = true
+        permissionsGeneral['pay_1'] = true
+        permissionsGeneral['pay_2'] = true
+        permissionsGeneral['pay_3'] = false
+        permissionsGeneral['act_0'] = false
+        permissionsGeneral['act_1'] = false
       }
       if (this.roles.includes('admin')) {
-        
+
       }
-      if (this.currentRole== "executive") {
-        
+      if (this.currentRole == 'executive') {
+
       }
-      if (this.currentRole== "supervisor") {
-        permissionsGeneral['promotor']= true;
-        permissionsGeneral['pay_1']= false;
-        permissionsGeneral['pay_2']= false;
-        permissionsGeneral['pay_3']= false;
-        permissionsGeneral['act_0']= false;
-        permissionsGeneral['act_1']= false;
+      if (this.currentRole == 'supervisor') {
+        permissionsGeneral['promotor'] = true
+        permissionsGeneral['pay_1'] = false
+        permissionsGeneral['pay_2'] = false
+        permissionsGeneral['pay_3'] = false
+        permissionsGeneral['act_0'] = false
+        permissionsGeneral['act_1'] = false
       }
 
-      return permissionsGeneral;
+      return permissionsGeneral
     },
     filterOptions() {
-      var filterOptionsGeneral= {
+      var filterOptionsGeneral = {
         page: 1,
         limit: 20,
         promotor: undefined,
@@ -700,39 +700,39 @@ export default {
         countrows: '',
         sumrows: '',
         payedrows: ''
-    };
-      if (this.currentRole== "promotor") {
-        filterOptionsGeneral['promotor']= this.$store.state.user.userid;
-        filterOptionsGeneral['pay_1']= false;
-        filterOptionsGeneral['pay_2']= true;
-        filterOptionsGeneral['pay_3']= false;
-        filterOptionsGeneral['act_0']= false;
-        filterOptionsGeneral['act_1']= true;
       }
-      if (this.currentRole== "operator") {
-        filterOptionsGeneral['promotor']= undefined;
-        filterOptionsGeneral['pay_1']= false;
-        filterOptionsGeneral['pay_2']= true;
-        filterOptionsGeneral['pay_3']= false;
-        filterOptionsGeneral['act_0']= false;
-        filterOptionsGeneral['act_1']= true;
+      if (this.currentRole == 'promotor') {
+        filterOptionsGeneral['promotor'] = this.$store.state.user.userid
+        filterOptionsGeneral['pay_1'] = false
+        filterOptionsGeneral['pay_2'] = true
+        filterOptionsGeneral['pay_3'] = false
+        filterOptionsGeneral['act_0'] = false
+        filterOptionsGeneral['act_1'] = true
+      }
+      if (this.currentRole == 'operator') {
+        filterOptionsGeneral['promotor'] = undefined
+        filterOptionsGeneral['pay_1'] = false
+        filterOptionsGeneral['pay_2'] = true
+        filterOptionsGeneral['pay_3'] = false
+        filterOptionsGeneral['act_0'] = false
+        filterOptionsGeneral['act_1'] = true
       }
       if (this.roles.includes('admin')) {
-        
+
       }
-      if (this.currentRole== "executive") {
-        
+      if (this.currentRole == 'executive') {
+
       }
-      if (this.currentRole== "supervisor") {
-        filterOptionsGeneral['promotor']= undefined;
-        filterOptionsGeneral['pay_1']= false;
-        filterOptionsGeneral['pay_2']= true;
-        filterOptionsGeneral['pay_3']= false;
-        filterOptionsGeneral['act_0']= false;
-        filterOptionsGeneral['act_1']= true;
+      if (this.currentRole == 'supervisor') {
+        filterOptionsGeneral['promotor'] = undefined
+        filterOptionsGeneral['pay_1'] = false
+        filterOptionsGeneral['pay_2'] = true
+        filterOptionsGeneral['pay_3'] = false
+        filterOptionsGeneral['act_0'] = false
+        filterOptionsGeneral['act_1'] = true
       }
 
-      return filterOptionsGeneral;
+      return filterOptionsGeneral
     }
   }
 }
