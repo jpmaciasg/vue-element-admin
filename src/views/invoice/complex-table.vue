@@ -62,7 +62,7 @@
       <el-button v-waves :loading="downloadLoading" class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">
         Exportar
       </el-button>
-      <el-button v-waves :loading="downloadLoading" class="filter-item" type="primary" @click="handleReset">
+      <el-button v-waves class="filter-item" type="primary" @click="handleReset">
         Borrar filtros
       </el-button>
 
@@ -583,8 +583,8 @@ export default {
         }, 1.5 * 1000) */
 
         import('@/vendor/Export2Excel').then(excel => {
-          const tHeader = ['FECHA', 'FACTURA', 'CLIENTE', 'RFC','SUBTOTAL','IVA' ,'TOTAL', 'PAGADO', 'ESTADO','ESTATUS','DEUDA', 'PROMOTOR']
-          const filterVal = ['fac_fecha' ,'fac_folio', 'fac_receptornombre', 'fac_receptorrfc', 'fac_subtotal','fac_iva','fac_total', 'fac_payments','fac_pagadatext','fac_isactive', 'fac_debt', 'username']
+          const tHeader = ['FECHA', 'FACTURA', 'CLIENTE', 'RFC', 'SUBTOTAL', 'IVA', 'TOTAL', 'PAGADO', 'ESTADO', 'ESTATUS', 'DEUDA', 'PROMOTOR']
+          const filterVal = ['fac_fecha', 'fac_folio', 'fac_receptornombre', 'fac_receptorrfc', 'fac_subtotal', 'fac_iva', 'fac_total', 'fac_payments', 'fac_pagadatext', 'fac_isactive', 'fac_debt', 'username']
           const data = this.formatJson(filterVal, dlist)
           excel.export_json_to_excel({
             header: tHeader,
@@ -684,8 +684,8 @@ export default {
       }
       if (this.currentRole == 'supervisor') {
         permissionsGeneral['promotor'] = true
-        permissionsGeneral['pay_1'] = false
-        permissionsGeneral['pay_2'] = false
+        permissionsGeneral['pay_1'] = true
+        permissionsGeneral['pay_2'] = true
         permissionsGeneral['pay_3'] = false
         permissionsGeneral['act_0'] = false
         permissionsGeneral['act_1'] = false
@@ -700,10 +700,10 @@ export default {
         promotor: undefined,
         search: '',
         pay_1: false,
-        pay_2: true,
-        pay_3: true,
-        act_1: true,
-        act_0: false,
+        pay_2: false, //true
+        pay_3: false, //true
+        act_1: false, //true
+        act_0: false, //false
         sort: '-fac_fecha',
         from: undefined,
         to: undefined,
@@ -725,10 +725,10 @@ export default {
       if (this.currentRole == 'operator') {
         filterOptionsGeneral['promotor'] = undefined
         filterOptionsGeneral['pay_1'] = false
-        filterOptionsGeneral['pay_2'] = true
+        filterOptionsGeneral['pay_2'] = true //true
         filterOptionsGeneral['pay_3'] = false
         filterOptionsGeneral['act_0'] = false
-        filterOptionsGeneral['act_1'] = true
+        filterOptionsGeneral['act_1'] = true //true
       }
       if (this.roles.includes('admin')) {
 
