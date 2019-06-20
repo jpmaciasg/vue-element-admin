@@ -136,13 +136,22 @@
           <span v-else>0</span>
         </template>
       </el-table-column> -->
-      <el-table-column label="Estado" class-name="status-col" width="120">
+      <el-table-column label="Pagos" class-name="status-col" width="120">
         <template slot-scope="{row}">
-          <el-tag :type="row.fac_pagada | statusFilter">
-            {{ row.fac_pagada | statusText }}
+          <el-tag :type="row.fac_pagada | statusPFilter">
+            {{ row.fac_pagada | statusPText }}
           </el-tag>
         </template>
       </el-table-column>
+
+      <el-table-column label="Estatus" class-name="status-col" width="120">
+        <template slot-scope="{row}">
+          <el-tag :type="row.fac_isactive | statusIFilter">
+            {{ row.fac_isactive | statusText }}
+          </el-tag>
+        </template>
+      </el-table-column>
+
       <el-table-column label=" " align="center" width="100" class-name="small-padding fixed-width">
         <template slot-scope="{row}">
           <router-link :to="'/invoices/edit/'+row.fac_key">
@@ -259,19 +268,33 @@ export default {
   components: { Pagination },
   directives: { waves },
   filters: {
-    statusFilter(status) {
-      const statusMap = {
+    statusPFilter(status) {
+      const statusPMap = {
         '1': 'success',
         '3': 'info',
         '2': 'danger'
       }
+      return statusPMap[status]
+    },
+    statusIFilter(status) {
+      const statusMap = {
+        true: 'success',
+        false: 'danger'
+      }
       return statusMap[status]
     },
-    statusText(status) {
-      const statusTextMap = {
+    statusPText(status) {
+      const statusPTextMap = {
         '1': 'Pagada',
         '2': 'No pagada',
         '3': 'Confirmar'
+      }
+      return statusPTextMap[status]
+    },
+    statusText(status) {
+      const statusTextMap = {
+        true: 'Activa',
+        false: 'Cancelada'
       }
       return statusTextMap[status]
     },
@@ -287,7 +310,26 @@ export default {
       suma: 0,
       pagado: 0,
       listLoading: true,
-      listQuery: {},
+      listQuery: {
+        page: 1,
+        limit: 20,
+        promotor: undefined,
+        search: '',
+        pay_1: false,
+        pay_2: false, // true
+        pay_3: false, // true
+        act_1: false, // true
+        act_0: false, // false
+        sort: '-fac_fecha',
+        from: undefined,
+        to: undefined,
+        fromp: undefined,
+        top: undefined,
+        export: '',
+        countrows: '',
+        sumrows: '',
+        payedrows: ''
+      },
       // importanceOptions: [{ label: 'ID Ascending', key: '1' }, { label: 'ID Descending', key: '2' }, { label: 'Por confirmar', key: '2' }],
       calendarTypeOptions,
       // sortOptions: [{ label: 'ID Ascending', key: '+id' }, { label: 'ID Descending', key: '-id' }],
@@ -347,10 +389,11 @@ export default {
     if (this.roles.includes('supervisor')) {
       this.currentRole = 'supervisor'
     }
-    this.listQuery = this.filterOptions
+    
     console.log('uid')
     this.userid = this.$store.state.user.userid
     console.log(this.userid)
+    this.filterOptions()
     this.filterPermissions = this.filterRolePermissions
   },
   methods: {
@@ -453,8 +496,13 @@ export default {
         sumrows: '',
         payedrows: ''
       }*/
-      this.listQuery = this.filterOptions
+      /*this.listQuery = {}
+      console.log('filter')
+      console.log(this.filterOptions);
+      console.log('list')
+      console.log(this.listQuery);*/
       // this.listQuery.page = 1
+      this.filterOptions()
       this.getTotalRows()
     },
     handleFilter() {
@@ -603,6 +651,60 @@ export default {
           return v[j]
         }
       }))
+    },
+    filterOptions(){
+
+        this.listQuery['page'] = 1
+        this.listQuery['limit'] = 20
+        this.listQuery['promotor'] = undefined
+        this.listQuery['search'] = ''
+        this.listQuery['pay_1'] = false
+        this.listQuery['pay_2'] = false // true
+        this.listQuery['pay_3'] = false // true
+        this.listQuery['act_1'] = false // true
+        this.listQuery['act_0'] = false // false
+        this.listQuery['sort'] = '-fac_fecha'
+        this.listQuery['from'] = undefined
+        this.listQuery['to'] = undefined
+        this.listQuery['fromp'] = undefined
+        this.listQuery['top'] = undefined
+        this.listQuery['export'] = ''
+        this.listQuery['countrows'] = ''
+        this.listQuery['sumrows'] = ''
+        this.listQuery['payedrows'] = ''
+
+      if (this.currentRole == 'promotor') {
+        this.listQuery['promotor'] = this.$store.state.user.userid
+        this.listQuery['pay_1'] = false
+        this.listQuery['pay_2'] = true
+        this.listQuery['pay_3'] = false
+        this.listQuery['act_0'] = false
+        this.listQuery['act_1'] = true
+      }
+      if (this.currentRole == 'operator') {
+        this.listQuery['promotor'] = undefined
+        this.listQuery['pay_1'] = false
+        this.listQuery['pay_2'] = true // true
+        this.listQuery['pay_3'] = false
+        this.listQuery['act_0'] = false
+        this.listQuery['act_1'] = true // true
+      }
+      if (this.roles.includes('admin')) {
+
+      }
+      if (this.currentRole == 'executive') {
+
+      }
+      if (this.currentRole == 'supervisor') {
+        this.listQuery['promotor'] = undefined
+        this.listQuery['pay_1'] = false
+        this.listQuery['pay_2'] = true
+        this.listQuery['pay_3'] = false
+        this.listQuery['act_0'] = false
+        this.listQuery['act_1'] = true
+      }
+    //console.log(filterOptionsGeneral);
+      //return filterOptionsGeneral
     }
   },
   computed: {
@@ -693,17 +795,17 @@ export default {
 
       return permissionsGeneral
     },
-    filterOptions() {
+    filterOptions1() {
       var filterOptionsGeneral = {
         page: 1,
         limit: 20,
         promotor: undefined,
         search: '',
         pay_1: false,
-        pay_2: false, //true
-        pay_3: false, //true
-        act_1: false, //true
-        act_0: false, //false
+        pay_2: false, // true
+        pay_3: false, // true
+        act_1: false, // true
+        act_0: false, // false
         sort: '-fac_fecha',
         from: undefined,
         to: undefined,
@@ -725,10 +827,10 @@ export default {
       if (this.currentRole == 'operator') {
         filterOptionsGeneral['promotor'] = undefined
         filterOptionsGeneral['pay_1'] = false
-        filterOptionsGeneral['pay_2'] = true //true
+        filterOptionsGeneral['pay_2'] = true // true
         filterOptionsGeneral['pay_3'] = false
         filterOptionsGeneral['act_0'] = false
-        filterOptionsGeneral['act_1'] = true //true
+        filterOptionsGeneral['act_1'] = true // true
       }
       if (this.roles.includes('admin')) {
 
@@ -744,7 +846,7 @@ export default {
         filterOptionsGeneral['act_0'] = false
         filterOptionsGeneral['act_1'] = true
       }
-
+    //console.log(filterOptionsGeneral);
       return filterOptionsGeneral
     }
   }
