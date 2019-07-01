@@ -46,7 +46,7 @@ class InvoiceSerializer(serializers.ModelSerializer):
                   'fac_observaciones', 'fac_fechapago', 'fac_fecha',
                   'fac_cdate', 'fac_subtotal', 'fac_iva', 'fac_payments', 
                   'fac_isactive', 'fac_contact', 'fac_lastreminder', 'fac_pagada',
-                  'fac_complemento', 'fac_idclient','fac_iduser', 'first_name', 'last_name', 'username')
+                  'fac_complemento', 'fac_idclient','fac_iduser', 'first_name', 'last_name', 'username','fac_expectedpaymentday')
 
         datatables_always_serialize = ('fac_key','fac_iduser')
 
