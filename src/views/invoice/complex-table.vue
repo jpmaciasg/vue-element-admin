@@ -9,7 +9,7 @@
       <el-date-picker v-model="listQuery.from" type="date" placeholder="Fecha inicial" class="filter-item" />
       <el-date-picker v-model="listQuery.to" type="date" placeholder="Fecha final" class="filter-item" />
       <el-select v-model="listQuery.promotor" placeholder="Promotor" clearable style="width: 210px" class="filter-item" v-bind="enabledPromotorFilter">
-        <!--  <el-option key="0" label="-- Seleccionar --" value="" /> -->
+        <el-option key="-1" label="-- Sin promotor--" value="0" />
         <el-option v-for="item in promotorList" :key="item.id" :label="item.first_name + ' ' + item.last_name" :value="item.id" />
       </el-select>
       <br>
@@ -72,13 +72,13 @@
   &nbsp;
       </el-col>
       <el-col :span="6">
-        <span class="filter-item">Total: {{ suma }} </span>
+        <span class="filter-item">Total: {{ suma | parseMoney }} </span>
       </el-col>
       <el-col :span="6">
-        <span class="filter-item">Pagos: {{ pagado }}</span>
+        <span class="filter-item">Pagos: {{ pagado | parseMoney }}</span>
       </el-col>
       <el-col :span="6">
-        <span class="filter-item">Pendiente: {{ suma - pagado }}</span>
+        <span class="filter-item">Pendiente: {{ suma - pagado  | parseMoney}}</span>
       </el-col>
     </el-row>
     <el-table
@@ -90,6 +90,8 @@
       highlight-current-row
       style="width: 100%;"
       @sort-change="sortChange"
+      :row-class-name="tableRowClassName"
+      lazy
     >
       <el-table-column label="ID" prop="fac_key" sortable="custom" align="center" width="80">
         <template slot-scope="scope">
@@ -115,9 +117,14 @@
           <span>{{ scope.row.fac_receptornombre }}<br>{{ scope.row.fac_receptorrfc }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="Total" width="120px" align="center">
+      <el-table-column label="Total" width="160px" align="center">
         <template slot-scope="scope">
-          <span>Total: {{ scope.row.fac_total }}</span><br><span>Pagado: {{ scope.row.fac_payments }}</span><br><span>Deuda: {{ scope.row.fac_debt }}</span>
+          <span>Total: {{ scope.row.fac_total | parseMoney }}</span><br><span>Pagado: {{ scope.row.fac_payments | parseMoney }}</span><br><span>Deuda: {{ scope.row.fac_debt | parseMoney }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="Fecha esperada de pago" width="150px" align="center">
+        <template slot-scope="scope">
+          <span>{{ scope.row.fac_expectedpaymentday  }}</span>
         </template>
       </el-table-column>
       <!-- <el-table-column v-if="showReviewer" label="Reviewer" width="110px" align="center">
@@ -152,6 +159,12 @@
         </template>
       </el-table-column>
 
+      <el-table-column label="Promotor" class-name="status-col" width="150">
+        <template slot-scope="scope">
+          <span>{{ scope.row.username }}</span>
+        </template>
+      </el-table-column>
+
       <el-table-column label=" " align="center" width="100" class-name="small-padding fixed-width">
         <template slot-scope="{row}">
           <router-link :to="'/invoices/edit/'+row.fac_key">
@@ -179,13 +192,13 @@
   &nbsp;
       </el-col>
       <el-col :span="6">
-        <span class="filter-item">Total: {{ suma }} </span>
+        <span class="filter-item">Total: {{ suma | parseMoney }} </span>
       </el-col>
       <el-col :span="6">
-        <span class="filter-item">Pagos: {{ pagado }}</span>
+        <span class="filter-item">Pagos: {{ pagado | parseMoney }}</span>
       </el-col>
       <el-col :span="6">
-        <span class="filter-item">Pendiente: {{ suma - pagado }}</span>
+        <span class="filter-item">Pendiente: {{ suma - pagado | parseMoney }}</span>
       </el-col>
     </el-row>
     <pagination
@@ -242,11 +255,25 @@
     </el-dialog>
   </div>
 </template>
+<style>
+  .el-table .warning-row {
+   /*background: oldlace;*/
+    background: #fcebcb;
+  }
+
+  .el-table .danger-row{
+    background: #ff49491a;
+  }
+
+  .el-table .success-row {
+    background: #f0f9eb;
+  }
+</style>
 
 <script>
 import { fetchList, fetchPv, updateArticle, fetchFirstUnpaidDate, fetchPromotorsList } from '@/api/invoice'
 import waves from '@/directive/waves' // waves directive
-import { parseTime, parseMoney } from '@/utils'
+import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 import { mapGetters } from 'vuex'
 
@@ -300,7 +327,23 @@ export default {
     },
     typeFilter(type) {
       return calendarTypeKeyValue[type]
+    },
+    parseMoney(amount, decimalCount = 2, decimal = '.', thousands = ',') {
+    try {
+      decimalCount = Math.abs(decimalCount)
+      decimalCount = isNaN(decimalCount) ? 2 : decimalCount
+
+      const negativeSign = amount < 0 ? '-' : ''
+
+      const i = parseInt(amount = Math.abs(Number(amount) || 0).toFixed(decimalCount)).toString()
+      const j = (i.length > 3) ? i.length % 3 : 0
+
+      return negativeSign + (j ? i.substr(0, j) + thousands : '') + i.substr(j).replace(/(\d{3})(?=\d)/g, '$1' + thousands) + (decimalCount ? decimal + Math.abs(amount - i).toFixed(decimalCount).slice(2) : '')
+    } catch (e) {
+      console.log(e)
+      return '';
     }
+  }
   },
   data() {
     return {
@@ -389,7 +432,7 @@ export default {
     if (this.roles.includes('supervisor')) {
       this.currentRole = 'supervisor'
     }
-    
+
     console.log('uid')
     this.userid = this.$store.state.user.userid
     console.log(this.userid)
@@ -496,7 +539,7 @@ export default {
         sumrows: '',
         payedrows: ''
       }*/
-      /*this.listQuery = {}
+      /* this.listQuery = {}
       console.log('filter')
       console.log(this.filterOptions);
       console.log('list')
@@ -631,8 +674,8 @@ export default {
         }, 1.5 * 1000) */
 
         import('@/vendor/Export2Excel').then(excel => {
-          const tHeader = ['FECHA', 'FACTURA', 'CLIENTE', 'RFC', 'SUBTOTAL', 'IVA', 'TOTAL', 'PAGADO', 'ESTADO', 'ESTATUS', 'DEUDA', 'PROMOTOR']
-          const filterVal = ['fac_fecha', 'fac_folio', 'fac_receptornombre', 'fac_receptorrfc', 'fac_subtotal', 'fac_iva', 'fac_total', 'fac_payments', 'fac_pagadatext', 'fac_isactive', 'fac_debt', 'username']
+          const tHeader = ['FECHA', 'FACTURA', 'CLIENTE', 'RFC', 'SUBTOTAL', 'IVA', 'TOTAL', 'PAGADO', 'FECHA_ESPERADA_DE_PAGO', 'ESTADO', 'ESTATUS', 'DEUDA', 'PROMOTOR']
+          const filterVal = ['fac_fecha', 'fac_folio', 'fac_receptornombre', 'fac_receptorrfc', 'fac_subtotal', 'fac_iva', 'fac_total', 'fac_payments', 'fac_expectedpaymentday', 'fac_pagadatext', 'fac_isactivetext', 'fac_debt', 'username']
           const data = this.formatJson(filterVal, dlist)
           excel.export_json_to_excel({
             header: tHeader,
@@ -652,26 +695,25 @@ export default {
         }
       }))
     },
-    filterOptions(){
-
-        this.listQuery['page'] = 1
-        this.listQuery['limit'] = 20
-        this.listQuery['promotor'] = undefined
-        this.listQuery['search'] = ''
-        this.listQuery['pay_1'] = false
-        this.listQuery['pay_2'] = false // true
-        this.listQuery['pay_3'] = false // true
-        this.listQuery['act_1'] = false // true
-        this.listQuery['act_0'] = false // false
-        this.listQuery['sort'] = '-fac_fecha'
-        this.listQuery['from'] = undefined
-        this.listQuery['to'] = undefined
-        this.listQuery['fromp'] = undefined
-        this.listQuery['top'] = undefined
-        this.listQuery['export'] = ''
-        this.listQuery['countrows'] = ''
-        this.listQuery['sumrows'] = ''
-        this.listQuery['payedrows'] = ''
+    filterOptions() {
+      this.listQuery['page'] = 1
+      this.listQuery['limit'] = 20
+      this.listQuery['promotor'] = undefined
+      this.listQuery['search'] = ''
+      this.listQuery['pay_1'] = false
+      this.listQuery['pay_2'] = false // true
+      this.listQuery['pay_3'] = false // true
+      this.listQuery['act_1'] = false // true
+      this.listQuery['act_0'] = false // false
+      this.listQuery['sort'] = '-fac_fecha'
+      this.listQuery['from'] = undefined
+      this.listQuery['to'] = undefined
+      this.listQuery['fromp'] = undefined
+      this.listQuery['top'] = undefined
+      this.listQuery['export'] = ''
+      this.listQuery['countrows'] = ''
+      this.listQuery['sumrows'] = ''
+      this.listQuery['payedrows'] = ''
 
       if (this.currentRole == 'promotor') {
         this.listQuery['promotor'] = this.$store.state.user.userid
@@ -703,9 +745,38 @@ export default {
         this.listQuery['act_0'] = false
         this.listQuery['act_1'] = true
       }
-    //console.log(filterOptionsGeneral);
-      //return filterOptionsGeneral
-    }
+    // console.log(filterOptionsGeneral);
+      // return filterOptionsGeneral
+    },
+  tableRowClassName({row, rowIndex}) {
+      
+      if (row.fac_expectedpaymentday === null) {
+            return 'danger-row';
+          } else {
+
+            var d1=new Date();
+            var d2=new Date(row.fac_expectedpaymentday);
+            d1.setUTCHours(13);
+            d2.setUTCHours(13);
+            d1.setUTCMinutes(0);
+            d2.setUTCMinutes(0);
+            d1.setUTCSeconds(0);
+            d2.setUTCSeconds(0);
+            d1.setUTCMilliseconds(0);
+            d2.setUTCMilliseconds(0);
+
+            if (d1.getTime()>d2.getTime()){
+              return 'danger-row';
+            }
+            else if (d1.getTime() === d2.getTime()){
+              return 'warning-row';
+            }
+
+          }
+
+        
+        return '';
+      }
   },
   computed: {
     ...mapGetters([
@@ -846,7 +917,7 @@ export default {
         filterOptionsGeneral['act_0'] = false
         filterOptionsGeneral['act_1'] = true
       }
-    //console.log(filterOptionsGeneral);
+      // console.log(filterOptionsGeneral);
       return filterOptionsGeneral
     }
   }
