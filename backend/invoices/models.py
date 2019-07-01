@@ -34,6 +34,7 @@ class Invoice (models.Model):
     fac_idclient=models.ForeignKey(Contact, to_field='id', db_column = 'fac_idclient', on_delete = '', null=True, blank=True)
     #fac_iduser= models.IntegerField(null = True, default=0)
     fac_iduser=models.ForeignKey(User, to_field='id', db_column = 'fac_iduser', on_delete = '', null=True, blank=True)
+    fac_expectedpaymentday = models.DateField(null=True, blank=True)
 
     @property
     def fac_debt(self):
@@ -50,6 +51,26 @@ class Invoice (models.Model):
             ret='CONFIRMAR'
 
         return ret
+
+    @property
+    def fac_isactivetext(self):
+        ret=''
+        if self.fac_isactive==True:
+            ret ='ACTIVA'
+        elif self.fac_isactive==False:
+            ret ='CANCELADA'
+
+        return ret
+
+    @property
+    def fac_daysopen(self):
+        d=0
+        if self.fac_pagada == None:
+            d=datetime.now().date() - self.fac_fecha
+        else:
+            d=self.fac_fechapago - self.fac_fecha
+
+        return d.days
 
 
 

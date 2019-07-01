@@ -56,6 +56,7 @@ class InvoiceNoXmlSerializer(serializers.ModelSerializer):
     fac_key = serializers.IntegerField(read_only=True)
     fac_debt = serializers.ReadOnlyField()
     fac_pagadatext=serializers.ReadOnlyField()
+    fac_isactivetext=serializers.ReadOnlyField()
     fac_iduser= serializers.PrimaryKeyRelatedField(
             queryset= User.objects.all(),
             required= False,
@@ -74,7 +75,7 @@ class InvoiceNoXmlSerializer(serializers.ModelSerializer):
                   'fac_observaciones', 'fac_fechapago', 'fac_fecha',
                   'fac_cdate', 'fac_subtotal', 'fac_iva', 'fac_payments', 
                   'fac_isactive', 'fac_contact', 'fac_lastreminder', 'fac_pagada', 'fac_debt','fac_pagadatext',
-                  'fac_complemento', 'fac_idclient','fac_iduser', 'first_name', 'last_name', 'username')
+                  'fac_complemento', 'fac_idclient','fac_iduser', 'first_name', 'last_name', 'username','fac_expectedpaymentday','fac_isactivetext')
 
         datatables_always_serialize = ('fac_key','fac_iduser')
 
