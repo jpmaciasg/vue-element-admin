@@ -631,8 +631,8 @@ export default {
         }, 1.5 * 1000) */
 
         import('@/vendor/Export2Excel').then(excel => {
-          const tHeader = ['FECHA', 'FACTURA', 'CLIENTE', 'RFC', 'SUBTOTAL', 'IVA', 'TOTAL', 'PAGADO', 'ESTADO', 'ESTATUS', 'DEUDA', 'PROMOTOR']
-          const filterVal = ['fac_fecha', 'fac_folio', 'fac_receptornombre', 'fac_receptorrfc', 'fac_subtotal', 'fac_iva', 'fac_total', 'fac_payments', 'fac_pagadatext', 'fac_isactive', 'fac_debt', 'username']
+          const tHeader = ['FECHA', 'FACTURA', 'CLIENTE', 'RFC', 'SUBTOTAL', 'IVA', 'TOTAL', 'PAGADO' ,'FECHA_ESPERADA_DE_PAGO', 'ESTADO', 'ESTATUS', 'DEUDA', 'PROMOTOR']
+          const filterVal = ['fac_fecha', 'fac_folio', 'fac_receptornombre', 'fac_receptorrfc', 'fac_subtotal', 'fac_iva', 'fac_total', 'fac_payments', 'fac_expectedpaymentday', 'fac_pagadatext', 'fac_isactivetext', 'fac_debt', 'username']
           const data = this.formatJson(filterVal, dlist)
           excel.export_json_to_excel({
             header: tHeader,
