@@ -84,9 +84,9 @@
 &nbsp;
               </el-row>
               <el-row>
-                <el-col :span="6" class="text item"><span class="single-label">Fecha de pago:</span></el-col>
+                <el-col :span="6" class="text item"><span class="single-label">Cobrado:</span></el-col>
                 <el-col :span="14">
-                  <el-date-picker v-model="postForm.fac_fechapago" type="date" placeholder="Fecha de pago" class="filter-item" value-format="yyyy-MM-dd" @change="updateInvoicePaymentDate" v-bind="isPayedOptionEditable"/>
+                  <el-date-picker v-model="postForm.fac_fechapago" type="date" placeholder="Cobrado" class="filter-item" value-format="yyyy-MM-dd" @change="updateInvoicePaymentDate" v-bind="isPayedOptionEditable"/>
                 </el-col>
               </el-row>
               <el-row>
