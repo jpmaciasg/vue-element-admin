@@ -64,7 +64,7 @@
 &nbsp;
               </el-row>
               <el-row>
-                <el-col :span="8" class="text item"><span class="single-label">Pagado:</span> {{ sumOfPayments}}</el-col><el-col :span="8"><span class="single-label">Pendiente:</span> {{ postForm.fac_total - postForm.fac_payments }}</el-col>
+                <el-col :span="8" class="text item"><span class="single-label">Pagado:</span> {{ sumOfPayments }}</el-col><el-col :span="8"><span class="single-label">Pendiente:</span> {{ postForm.fac_total - postForm.fac_payments }}</el-col>
               </el-row>
               <el-row>
 &nbsp;
@@ -86,7 +86,7 @@
               <el-row>
                 <el-col :span="6" class="text item"><span class="single-label">Cobrado:</span></el-col>
                 <el-col :span="14">
-                  <el-date-picker v-model="postForm.fac_fechapago" type="date" placeholder="Cobrado" class="filter-item" value-format="yyyy-MM-dd" @change="updateInvoicePaymentDate" v-bind="isPayedOptionEditable"/>
+                  <el-date-picker v-model="postForm.fac_fechapago" type="date" placeholder="Cobrado" class="filter-item" value-format="yyyy-MM-dd" v-bind="isPayedOptionEditable" @change="updateInvoicePaymentDate" />
                 </el-col>
               </el-row>
               <el-row>
@@ -99,6 +99,15 @@
                     <!--  <el-option key="0" label="-- Seleccionar --" value="" /> -->
                     <el-option v-for="item in promotorList" :key="item.id" :label="item.first_name + ' ' + item.last_name" :value="item.id" />
                   </el-select>
+                </el-col>
+              </el-row>
+              <el-row>
+&nbsp;
+              </el-row>
+              <el-row>
+                <el-col :span="6" class="text item"><span class="single-label">Fecha estimada de pago:</span></el-col>
+                <el-col :span="14">
+                  <el-date-picker v-model="postForm.fac_expectedpaymentday" type="date" placeholder="Fecha estimada de pago" class="filter-item" value-format="yyyy-MM-dd" @change="updateInvoiceExpectedPaymentDate" />
                 </el-col>
               </el-row>
               <el-row>
@@ -189,7 +198,7 @@
                       :size="'normal'"
                       :timestamp="log.log_datetime | humanDate"
                     >
-                      {{log.username}}: {{ log.log_text }}  <el-button @click="doDeleteLog(log.log_key)">x</el-button>
+                      {{ log.username }}: {{ log.log_text }}  <el-button @click="doDeleteLog(log.log_key)">x</el-button>
                     </el-timeline-item>
                   </el-timeline>
 
@@ -267,7 +276,7 @@
                 <el-row>
                   <el-col :span="6" class="text item"><span class="single-label">Dirección:</span></el-col>
                   <el-col :span="14">
-                    <el-input v-model="postFormClient.contact_address" type="textarea" placeholder="Calle, num, CP" style="width: 500px;" class="filter-item"  />
+                    <el-input v-model="postFormClient.contact_address" type="textarea" placeholder="Calle, num, CP" style="width: 500px;" class="filter-item" />
                   </el-col>
                 </el-row>
                 <el-row>
@@ -304,7 +313,7 @@ import Upload from '@/components/Upload/SingleImage3'
 import MDinput from '@/components/MDinput'
 import Sticky from '@/components/Sticky' // 粘性header组件
 import { validURL } from '@/utils/validate'
-import { fetchInvoice, fetchPromotorsList, fetchPaymentsHistoryList, updateInvoice, addInvoicePayment, fetchLogs, addInvoiceLog, deleteLog,deletePayment } from '@/api/invoice'
+import { fetchInvoice, fetchPromotorsList, fetchPaymentsHistoryList, updateInvoice, addInvoicePayment, fetchLogs, addInvoiceLog, deleteLog, deletePayment } from '@/api/invoice'
 import { fetchContact, updateContact } from '@/api/client'
 import { searchUser } from '@/api/remote-search'
 import Warning from './Warning'
@@ -390,13 +399,13 @@ export default {
       inputPromotor: undefined,
       inputObservaciones: undefined,
       inputComplementos: undefined,
-	inputLog: undefined,
+      inputLog: undefined,
       promotorList: [],
-	userid: 0,
+      userid: 0,
       invoiceClient: {},
       currentRole: '',
-	sumOfPayments: 0,
-	meid:0
+      sumOfPayments: 0,
+      meid: 0
     }
   },
   computed: {
@@ -468,9 +477,9 @@ export default {
       const id = this.$route.params && this.$route.params.id
       this.fetchData(id)
       this.fetchPaymentHistory(id)
-	this.fetchLogHistory(id)
+      this.fetchLogHistory(id)
       this.getPromotors()
-      //this.getClient(id)
+      // this.getClient(id)
     } else {
       this.postForm = {}
     }
@@ -490,9 +499,9 @@ export default {
     if (this.roles.includes('supervisor')) {
       this.currentRole = 'supervisor'
     }
-	//console.log(this.$store.state.user.roles);
-	this.userid=this.$store.state.user.userid;
-//console.log('meid'+this.meid);
+    // console.log(this.$store.state.user.roles);
+    this.userid = this.$store.state.user.userid
+    // console.log('meid'+this.meid);
 
     // Why need to make a copy of this.$route here?
     // Because if you enter this page and quickly switch tag, may be in the execution of the setTagsViewTitle function, this.$route is no longer pointing to the current page
@@ -502,20 +511,20 @@ export default {
   methods: {
     fetchPaymentHistory(id) {
       fetchPaymentsHistoryList(id).then(response => {
-        this.payments = response.data ; // JSON.parse(response.data);
-         //if (Array.isArray(this.payments)){
-        //console.log(this.payments[0]['his_amount'])
-        //}
-	var t=0
-	this.payments.forEach(function(e){
-		t += parseInt(e.his_amount); 	
-	});
-	this.sumOfPayments=t;
+        this.payments = response.data // JSON.parse(response.data);
+        // if (Array.isArray(this.payments)){
+        // console.log(this.payments[0]['his_amount'])
+        // }
+        var t = 0
+        this.payments.forEach(function(e) {
+          t += parseInt(e.his_amount)
+        })
+        this.sumOfPayments = t
       }).catch(err => {
         console.log(err)
       })
     },
-    /*getClient(id){
+    /* getClient(id){
       fetchClient(id).then(response => {
         var convert = require('xml-js')
         var tmpData = response.data
@@ -531,13 +540,13 @@ export default {
         this.recoverFormClient = Object.assign({}, tmpData)
       });
     },*/
-	fetchLogHistory(id){
-		fetchLogs(id).then(response => {
-			this.invoicelog = response.data;	
-		}).catch(err => {
-			console.log(err)
-		})
-	},
+    fetchLogHistory(id) {
+      fetchLogs(id).then(response => {
+        this.invoicelog = response.data
+      }).catch(err => {
+        console.log(err)
+      })
+    },
     fetchData(id) {
       fetchInvoice(id).then(response => {
         var convert = require('xml-js')
@@ -553,7 +562,7 @@ export default {
         this.postForm = Object.assign({}, tmpData)
         this.recoverForm = Object.assign({}, tmpData)
 
-	this.sumOfPayments = this.postForm.fac_payments;
+        this.sumOfPayments = this.postForm.fac_payments
         console.log('estatus:')
         console.log(this.postForm.fac_isactive)
 
@@ -650,15 +659,14 @@ export default {
     getInvoiceClient() {
       // this.listLoading = true
       fetchContact(this.postForm.fac_idclient).then(response => {
-        var tmpData=response.data;
+        var tmpData = response.data
 
         this.postFormClient = Object.assign({}, tmpData)
         this.recoverFormClient = Object.assign({}, tmpData)
-
       }).catch(err => {
         console.log(err)
 
-        this.postFormClient = Object.assign({}, recoverFormClient);
+        this.postFormClient = Object.assign({}, recoverFormClient)
 
         this.$notify({
           title: 'Error',
@@ -691,7 +699,7 @@ export default {
         })
       })
     },
-    doSaveClient(){
+    doSaveClient() {
       updateContact(this.postFormClient.id, this.postFormClient).then(response => {
         this.recoverFormClient = Object.assign({}, this.postFormClient)
         this.$notify({
@@ -734,6 +742,13 @@ export default {
       var keys = ['fac_fechapago']
       this.doSavePartialInvoice(data, keys)
     },
+    updateInvoiceExpectedPaymentDate() {
+      var data = {
+        fac_expectedpaymentday: this.postForm.fac_expectedpaymentday
+      }
+      var keys = ['fac_expectedpaymentday']
+      this.doSavePartialInvoice(data, keys)
+    },
     updatePromotor() {
       var data = {
         fac_iduser: this.postForm.fac_iduser
@@ -755,81 +770,79 @@ export default {
       var keys = ['fac_iduser']
       this.doSavePartialInvoice(data, keys)
     },
-	doSaveLog(){
-//console.log(this.userid);
-		var uid=this.userid
-		var data={
-			log_text: this.inputLog,
-			log_invoice: this.postForm.fac_key,
-			log_date: new Date(),
-			log_cuser: uid 
-		}
-		if (this.inputLog != undefined && this.inputLog != ""){
-			addInvoiceLog(data).then(response => {
-				this.$notify({
-					title: 'Bitacora',
-					message: 'Registro guardado',
-					type: 'success',
-					duration: 2000
-				})
-        this.inputLog='';
-        this.fetchLogHistory(this.postForm.fac_key);
-        
-			}).catch(err => {
-				console.log(err);
-			})
-		}
-  },
-  doDeletePayment(id){
-    deletePayment(id).then(response => {
-        //this.recoverForm = Object.assign({}, this.postForm)
+    doSaveLog() {
+      // console.log(this.userid);
+      var uid = this.userid
+      var data = {
+        log_text: this.inputLog,
+        log_invoice: this.postForm.fac_key,
+        log_date: new Date(),
+        log_cuser: uid
+      }
+      if (this.inputLog != undefined && this.inputLog != '') {
+        addInvoiceLog(data).then(response => {
+          this.$notify({
+            title: 'Bitacora',
+            message: 'Registro guardado',
+            type: 'success',
+            duration: 2000
+          })
+          this.inputLog = ''
+          this.fetchLogHistory(this.postForm.fac_key)
+        }).catch(err => {
+          console.log(err)
+        })
+      }
+    },
+    doDeletePayment(id) {
+      deletePayment(id).then(response => {
+        // this.recoverForm = Object.assign({}, this.postForm)
         this.$notify({
           title: 'Pagos',
           message: 'Registro eliminado',
           type: 'success',
           duration: 2000
-        });
+        })
 
         this.fetchPaymentHistory(this.postForm.fac_key)
-    });
-  },
-  doDeleteLog(id){
-    deleteLog(id).then(response => {
-        //this.recoverForm = Object.assign({}, this.postForm)
+      })
+    },
+    doDeleteLog(id) {
+      deleteLog(id).then(response => {
+        // this.recoverForm = Object.assign({}, this.postForm)
         this.$notify({
           title: 'Bitacora',
           message: 'Registro eliminado',
           type: 'success',
           duration: 2000
-        });
-
-        this.fetchLogHistory(this.postForm.fac_key);
-    });
-  },
-    doSavePayment(){
-      var data={
-        his_amount:this.inputAmount,
-        his_invoice: this.postForm.fac_key,
-        his_date:this.inputPaymentDate
-      };
-if(this.inputAmount != "" && this.inputPaymentDate != undefined && this.inputPaymentDate != ''){
-      addInvoicePayment(data).then(response => {
-        //this.recoverForm = Object.assign({}, this.postForm)
-        this.$notify({
-          title: 'Pagos',
-          message: 'Pago registrado',
-          type: 'success',
-          duration: 2000
         })
-	this.inputAmount='';
-	this.inputPaymentDate = ''
-        this.fetchPaymentHistory(this.postForm.fac_key)
-      }).catch(err => {
-        console.log(err)
-      })
-}
 
-	},
+        this.fetchLogHistory(this.postForm.fac_key)
+      })
+    },
+    doSavePayment() {
+      var data = {
+        his_amount: this.inputAmount,
+        his_invoice: this.postForm.fac_key,
+        his_date: this.inputPaymentDate
+      }
+      if (this.inputAmount != '' && this.inputPaymentDate != undefined && this.inputPaymentDate != '') {
+        addInvoicePayment(data).then(response => {
+        // this.recoverForm = Object.assign({}, this.postForm)
+          this.$notify({
+            title: 'Pagos',
+            message: 'Pago registrado',
+            type: 'success',
+            duration: 2000
+          })
+          this.inputAmount = ''
+          this.inputPaymentDate = ''
+          this.fetchPaymentHistory(this.postForm.fac_key)
+        }).catch(err => {
+          console.log(err)
+        })
+      }
+    },
     setTagsViewTitle() {
       const title = 'Factura'
       const route = Object.assign({}, this.tempRoute, { title: `${title}-${this.postForm.fac_serie} ${this.postForm.fac_folio}` })
@@ -866,20 +879,20 @@ if(this.inputAmount != "" && this.inputPaymentDate != undefined && this.inputPay
     }
   },
   filters: {
-       // Filter definitions
-        humanDate(value) {
-          const options = {
-  year: 'numeric',
-  month: 'numeric',
-  day: 'numeric',
-  hour: 'numeric',
-  minute: 'numeric',
-  second: 'numeric'
-};
-           var d=new Date(value);
-          return new Intl.DateTimeFormat('es-MX', options).format(d)//d.toDateString() + " " + d.toTimeString();
-        }
+    // Filter definitions
+    humanDate(value) {
+      const options = {
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        second: 'numeric'
+      }
+      var d = new Date(value)
+      return new Intl.DateTimeFormat('es-MX', options).format(d)// d.toDateString() + " " + d.toTimeString();
     }
+  }
 }
 </script>
 
