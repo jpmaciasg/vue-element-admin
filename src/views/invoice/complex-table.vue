@@ -44,10 +44,13 @@
       </el-radio-group> -->
       <br>
       <div v-if="currentRole=='admin' || currentRole == 'executive'">
-        <span style="font-size:12px;" class="filter-item">Fecha pago:</span>
+        <span style="font-size:12px;" class="filter-item">Cobrado:</span>
         <el-date-picker v-model="listQuery.fromp" type="date" placeholder="Fecha inicial" class="filter-item" />
         <el-date-picker v-model="listQuery.top" type="date" placeholder="Fecha final" class="filter-item" />
         <br>
+        <span style="font-size:12px;" class="filter-item">Fecha esperada de pago:</span>
+        <el-date-picker v-model="listQuery.fromc" type="date" placeholder="Fecha inicial" class="filter-item" />
+        <el-date-picker v-model="listQuery.toc" type="date" placeholder="Fecha final" class="filter-item" />
       </div>
 
       <!-- <el-select v-model="listQuery.sort" style="width: 140px" class="filter-item" @change="handleFilter">
@@ -78,7 +81,7 @@
         <span class="filter-item">Pagos: {{ pagado | parseMoney }}</span>
       </el-col>
       <el-col :span="6">
-        <span class="filter-item">Pendiente: {{ suma - pagado  | parseMoney}}</span>
+        <span class="filter-item">Pendiente: {{ suma - pagado | parseMoney }}</span>
       </el-col>
     </el-row>
     <el-table
@@ -89,9 +92,9 @@
       fit
       highlight-current-row
       style="width: 100%;"
-      @sort-change="sortChange"
       :row-class-name="tableRowClassName"
       lazy
+      @sort-change="sortChange"
     >
       <el-table-column label="ID" prop="fac_key" sortable="custom" align="center" width="80">
         <template slot-scope="scope">
@@ -124,7 +127,7 @@
       </el-table-column>
       <el-table-column label="Fecha esperada de pago" width="150px" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.fac_expectedpaymentday  }}</span>
+          <span>{{ scope.row.fac_expectedpaymentday }}</span>
         </template>
       </el-table-column>
       <!-- <el-table-column v-if="showReviewer" label="Reviewer" width="110px" align="center">
@@ -329,21 +332,21 @@ export default {
       return calendarTypeKeyValue[type]
     },
     parseMoney(amount, decimalCount = 2, decimal = '.', thousands = ',') {
-    try {
-      decimalCount = Math.abs(decimalCount)
-      decimalCount = isNaN(decimalCount) ? 2 : decimalCount
+      try {
+        decimalCount = Math.abs(decimalCount)
+        decimalCount = isNaN(decimalCount) ? 2 : decimalCount
 
-      const negativeSign = amount < 0 ? '-' : ''
+        const negativeSign = amount < 0 ? '-' : ''
 
-      const i = parseInt(amount = Math.abs(Number(amount) || 0).toFixed(decimalCount)).toString()
-      const j = (i.length > 3) ? i.length % 3 : 0
+        const i = parseInt(amount = Math.abs(Number(amount) || 0).toFixed(decimalCount)).toString()
+        const j = (i.length > 3) ? i.length % 3 : 0
 
-      return negativeSign + (j ? i.substr(0, j) + thousands : '') + i.substr(j).replace(/(\d{3})(?=\d)/g, '$1' + thousands) + (decimalCount ? decimal + Math.abs(amount - i).toFixed(decimalCount).slice(2) : '')
-    } catch (e) {
-      console.log(e)
-      return '';
+        return negativeSign + (j ? i.substr(0, j) + thousands : '') + i.substr(j).replace(/(\d{3})(?=\d)/g, '$1' + thousands) + (decimalCount ? decimal + Math.abs(amount - i).toFixed(decimalCount).slice(2) : '')
+      } catch (e) {
+        console.log(e)
+        return ''
+      }
     }
-  }
   },
   data() {
     return {
@@ -368,6 +371,8 @@ export default {
         to: undefined,
         fromp: undefined,
         top: undefined,
+        fromc: undefined,
+        toc: undefined,
         export: '',
         countrows: '',
         sumrows: '',
@@ -710,6 +715,8 @@ export default {
       this.listQuery['to'] = undefined
       this.listQuery['fromp'] = undefined
       this.listQuery['top'] = undefined
+      this.listQuery['fromc'] = undefined
+      this.listQuery['toc'] = undefined
       this.listQuery['export'] = ''
       this.listQuery['countrows'] = ''
       this.listQuery['sumrows'] = ''
@@ -748,35 +755,30 @@ export default {
     // console.log(filterOptionsGeneral);
       // return filterOptionsGeneral
     },
-  tableRowClassName({row, rowIndex}) {
-      
+    tableRowClassName({ row, rowIndex }) {
       if (row.fac_expectedpaymentday === null) {
-            return 'danger-row';
-          } else {
+        return 'danger-row'
+      } else {
+        var d1 = new Date()
+        var d2 = new Date(row.fac_expectedpaymentday)
+        d1.setUTCHours(13)
+        d2.setUTCHours(13)
+        d1.setUTCMinutes(0)
+        d2.setUTCMinutes(0)
+        d1.setUTCSeconds(0)
+        d2.setUTCSeconds(0)
+        d1.setUTCMilliseconds(0)
+        d2.setUTCMilliseconds(0)
 
-            var d1=new Date();
-            var d2=new Date(row.fac_expectedpaymentday);
-            d1.setUTCHours(13);
-            d2.setUTCHours(13);
-            d1.setUTCMinutes(0);
-            d2.setUTCMinutes(0);
-            d1.setUTCSeconds(0);
-            d2.setUTCSeconds(0);
-            d1.setUTCMilliseconds(0);
-            d2.setUTCMilliseconds(0);
-
-            if (d1.getTime()>d2.getTime()){
-              return 'danger-row';
-            }
-            else if (d1.getTime() === d2.getTime()){
-              return 'warning-row';
-            }
-
-          }
-
-        
-        return '';
+        if (d1.getTime() > d2.getTime()) {
+          return 'danger-row'
+        } else if (d1.getTime() === d2.getTime()) {
+          return 'warning-row'
+        }
       }
+
+      return ''
+    }
   },
   computed: {
     ...mapGetters([
@@ -882,6 +884,8 @@ export default {
         to: undefined,
         fromp: undefined,
         top: undefined,
+        fromc: undefined,
+        toc: undefined,
         export: '',
         countrows: '',
         sumrows: '',
