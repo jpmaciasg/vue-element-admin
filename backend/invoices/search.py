@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 import logging
 from users.models import User, Role
 
-def search_queryset(fromDate, toDate, search, is1, is0, ps1, ps2, ps3, relatedUser, sessionProfile, fromDateP, toDateP):
+def search_queryset(fromDate, toDate, search, is1, is0, ps1, ps2, ps3, relatedUser, sessionProfile, fromDateP, toDateP, fromDateC, toDateC):
 
         queryset = Invoice.objects.all()
 
@@ -16,8 +16,11 @@ def search_queryset(fromDate, toDate, search, is1, is0, ps1, ps2, ps3, relatedUs
         if sessionProfile == 3 :
             queryset = queryset.filter(fac_isactive= True, fac_pagada=2, fac_iduser=relatedUser)
         else:
-            if relatedUser != 0 :
+            if relatedUser > 0 :
                 queryset = queryset.filter(fac_iduser = relatedUser)
+
+            elif relatedUser==0:
+                queryset = queryset.exclude(fac_iduser__isnull = False)
 
             if ps1 > 0 or ps2 > 0 or ps3 > 0:
                 q_pay=Q()
@@ -64,6 +67,17 @@ def search_queryset(fromDate, toDate, search, is1, is0, ps1, ps2, ps3, relatedUs
                     q_datep &= Q(fac_fechapago__lte =toDateP)
 
                 queryset = queryset.filter(q_datep)
+
+            if fromDateC !=None or toDateC != None:
+                q_datec = Q()
+
+                if fromDateC != None:
+                    q_datec &= Q(fac_expectedpaymentday__gte=fromDateC)
+
+                if toDateC != None: 
+                    q_datec &= Q(fac_expectedpaymentday__lte =toDateC)
+
+                queryset = queryset.filter(q_datec)
 
             if search != '':
                 q_search = Q()

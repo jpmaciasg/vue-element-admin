@@ -77,7 +77,7 @@ class InvoiceNoXmlSerializer(serializers.ModelSerializer):
                   'fac_isactive', 'fac_contact', 'fac_lastreminder', 'fac_pagada', 'fac_debt','fac_pagadatext',
                   'fac_complemento', 'fac_idclient','fac_iduser', 'first_name', 'last_name', 'username','fac_expectedpaymentday','fac_isactivetext')
 
-        datatables_always_serialize = ('fac_key','fac_iduser')
+        datatables_always_serialize = ('fac_key','fac_iduser','username')
 
 
 class InvoiceLogSerializer(serializers.ModelSerializer):

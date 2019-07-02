@@ -139,6 +139,8 @@ class InvoiceListingAPIView(viewsets.ModelViewSet):
         tod=request.GET.get('to','')
         fromdp=request.GET.get('fromp','')
         todp=request.GET.get('top','')
+        fromdc=request.GET.get('fromc','')
+        todc=request.GET.get('toc','')
         promotor=request.GET.get('promotor','')
         paymentStatus1=request.GET.get('pay_1','')
         paymentStatus2=request.GET.get('pay_2','')
@@ -160,6 +162,8 @@ class InvoiceListingAPIView(viewsets.ModelViewSet):
         enddate=None
         startdatep=None
         enddatep=None
+        startdatec=None
+        enddatec=None
         
         if '' != fromd:
             startdate = datetime.strptime(fromd[0:10], '%Y-%m-%d')
@@ -170,6 +174,12 @@ class InvoiceListingAPIView(viewsets.ModelViewSet):
             startdatep = datetime.strptime(fromdp[0:10], '%Y-%m-%d')
         if '' != todp:
             enddatep = datetime.strptime(todp[0:10], '%Y-%m-%d')
+
+        if '' != fromdc:
+            startdatec = datetime.strptime(fromdc[0:10], '%Y-%m-%d')
+        if '' != todc:
+            enddatec = datetime.strptime(todc[0:10], '%Y-%m-%d')
+
 
         act1=0
         if '' != activeStatus1:
@@ -206,11 +216,11 @@ class InvoiceListingAPIView(viewsets.ModelViewSet):
             else:
                 pay3=0
 
-        prom=0
+        prom=-1
         if promotor != '':
             prom = int(promotor)
 
-        queryset=search_queryset(fromDate=startdate, toDate=enddate,search=search, is1=act1, is0=act0, ps1=pay1, ps2=pay2, ps3=pay3, relatedUser=prom, sessionProfile=userrole, fromDateP=startdatep, toDateP=enddatep)
+        queryset=search_queryset(fromDate=startdate, toDate=enddate,search=search, is1=act1, is0=act0, ps1=pay1, ps2=pay2, ps3=pay3, relatedUser=prom, sessionProfile=userrole, fromDateP=startdatep, toDateP=enddatep, fromDateC=startdatec, toDateC=enddatec)
 
         #page = int(currentPage)
         #perpage = int(resultsPerPage)
@@ -328,7 +338,7 @@ class InvoiceIncomeAPIView(APIView):
         if '' != tod:
             enddate = datetime.strptime(tod[0:10], '%Y-%m-%d') + timedelta(minutes=1439)
 
-        queryset=search_queryset(fromDate=startdate, toDate=enddate,search='', is1=1, is0=0, ps1=1, ps2=0, ps3=0, relatedUser=0, sessionProfile=0, fromDateP=None, toDateP=None)
+        queryset=search_queryset(fromDate=startdate, toDate=enddate,search='', is1=1, is0=0, ps1=1, ps2=0, ps3=0, relatedUser=-1, sessionProfile=0, fromDateP=None, toDateP=None, fromDateC=None, toDateC=None)
 
         queryset = queryset.aggregate(s=Sum('fac_total'))
         result = queryset['s']
@@ -370,7 +380,7 @@ class InvoiceCountAPIView(APIView):
         if '' != tod:
             enddate = datetime.strptime(tod[0:10], '%Y-%m-%d') + timedelta(minutes=1439)
 
-        queryset=search_queryset(fromDate=startdate, toDate=enddate,search='', is1=1, is0=0, ps1=0, ps2=0, ps3=0, relatedUser=0, sessionProfile=0, fromDateP=None, toDateP=None) 
+        queryset=search_queryset(fromDate=startdate, toDate=enddate,search='', is1=1, is0=0, ps1=0, ps2=0, ps3=0, relatedUser=-1, sessionProfile=0, fromDateP=None, toDateP=None, fromDateC=None, toDateC=None) 
         #i=Invoice.objects.filter(fac_cdate__gte=fromDate, fac_cdate__lte=toDate+timedelta(minutes=1439)).count()
         #print(i)
         #income=i['fac_total']i
