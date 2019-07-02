@@ -23,16 +23,15 @@ export function parseTime(time, cFormat) {
     if ((typeof time === 'number') && (time.toString().length === 10)) {
       time = time * 1000
     }
-    if (null === time){
-      time=''
+    if (time === null) {
+      time = ''
     }
-    if (time){
+    if (time) {
       date = new Date(time)
     }
-    
   }
 
-  if (date){
+  if (date) {
     const formatObj = {
       y: date.getFullYear(),
       m: date.getMonth() + 1,
@@ -54,8 +53,7 @@ export function parseTime(time, cFormat) {
     return time_str
   }
 
-  return '';
-  
+  return ''
 }
 
 /**
@@ -374,6 +372,6 @@ export function parseMoney(amount, decimalCount = 2, decimal = '.', thousands = 
     return negativeSign + (j ? i.substr(0, j) + thousands : '') + i.substr(j).replace(/(\d{3})(?=\d)/g, '$1' + thousands) + (decimalCount ? decimal + Math.abs(amount - i).toFixed(decimalCount).slice(2) : '')
   } catch (e) {
     console.log(e)
-    return '';
+    return ''
   }
 }
