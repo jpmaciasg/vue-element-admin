@@ -124,9 +124,9 @@ class InvoiceReminderSerializer(serializers.ModelSerializer):
             allow_null=True
     )
 
-    first_name = serializers.CharField(source = 'log_iduser.first_name', read_only=True)
-    last_name = serializers.CharField(source = 'log_iduser.last_name', read_only = True)
-    username = serializers.CharField(source = 'log_iduser.username', read_only = True)
+    first_name = serializers.CharField(source = 'rem_cuser.first_name', read_only=True)
+    last_name = serializers.CharField(source = 'rem_cuser.last_name', read_only = True)
+    username = serializers.CharField(source = 'rem_cuser.username', read_only = True)
 
 
     class Meta(object):
@@ -173,9 +173,13 @@ class InvoiceEdHistorySerializer(serializers.ModelSerializer):
             write_only=False
     )
 
+    username = serializers.CharField(source = 'ed_user.username', read_only = True)
+
+
+
     class Meta(object):
         model = InvoiceEdHistory
-        fields = ('ed_key','ed_invoice','ed_newdate', 'ed_olddate', 'ed_user',)
+        fields = ('ed_key','ed_invoice','ed_newdate', 'ed_olddate', 'ed_user','username',)
 
         datatables_always_serialize = ('ed_key',)
 '''

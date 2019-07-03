@@ -52,14 +52,16 @@ class UpdateInvoiceAPIView(UpdateAPIView):
             #data['fac_edupdatescount']=edc + 1
 
             data2['ed_invoice']=id
-            if i.fac_expectedpaymentday != None:
-                data2['ed_olddate']=str(i.fac_expectedpaymentday)+'T00:00:00'
-            else:
-                data2['ed_olddate']=None #str(i.fac_expectedpaymentday)+'T00:00:00' #.strftime('%Y-%m-%d')
-            if data['fac_expectedpaymentday'] != None:
-                data2['ed_newdate']= data['fac_expectedpaymentday']+'T00:00:00'
-            else:
-                data2['ed_newdate']=None #data['fac_expectedpaymentday']+'T00:00:00'
+            data2['ed_olddate']=i.fac_expectedpaymentday
+            #if i.fac_expectedpaymentday != None:
+            #    data2['ed_olddate']=str(i.fac_expectedpaymentday)+'T00:00:00'
+            #else:
+            #    data2['ed_olddate']=None #str(i.fac_expectedpaymentday)+'T00:00:00' #.strftime('%Y-%m-%d')
+            data2['ed_newdate']=data['fac_expectedpaymentday']
+            #if data['fac_expectedpaymentday'] != None:
+            #    data2['ed_newdate']= data['fac_expectedpaymentday']+'T00:00:00'
+            #else:
+            #    data2['ed_newdate']=None #data['fac_expectedpaymentday']+'T00:00:00'
             data2['ed_user']=uid
             #print(data2)
 
@@ -661,9 +663,9 @@ class InvoiceEdHistoryListingAPIView(APIView):
 
     def get(self, request,*args,**kwargs):
         id = self.kwargs['id']
-        queryset = InvoiceEdHistory.objects.all().filter(ed_invoice=id).order_by('-ed_newdate')
+        queryset = InvoiceEdHistory.objects.all().filter(ed_invoice=id).order_by('-ed_date')
         
-        serializer = InvoicePaymentHistorySerializer(queryset, many=True)
+        serializer = InvoiceEdHistorySerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def delete(self, request, *args, **kwargs):
