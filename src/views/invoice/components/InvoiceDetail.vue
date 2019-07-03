@@ -311,7 +311,7 @@
                       :type="'primary'"
                       :color="'#0bbd87'"
                       :size="'normal'"
-                      :timestamp="''"
+                      :timestamp="change.ed_date  | humanDate"
                     >
                       Cambio de [ {{ change.ed_olddate }} ] a [ {{ change.ed_newdate }} ] por {{ change.username }}<!-- <el-button @click="doDeletePayment(payment.his_key)">x</el-button> -->
                     </el-timeline-item>
@@ -724,8 +724,8 @@ export default {
           duration: 2000
         })
 
-        if (("fac_expectedpaymentday" in data)){
-            this.fetchEdHistory(this.postForm.fac_key)
+        if (('fac_expectedpaymentday' in data)) {
+          this.fetchEdHistory(this.postForm.fac_key)
         }
       }).catch(err => {
         console.log(err)
@@ -739,9 +739,6 @@ export default {
           type: 'warning',
           duration: 2000
         })
-
-        
-        
       })
     },
     doSaveClient() {
