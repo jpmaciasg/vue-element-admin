@@ -97,9 +97,9 @@ class InvoiceLogSerializer(serializers.ModelSerializer):
             required= False,
             write_only=False
     )
-    first_name = serializers.CharField(source = 'log_iduser.first_name', read_only=True)
-    last_name = serializers.CharField(source = 'log_iduser.last_name', read_only = True)
-    username = serializers.CharField(source = 'log_iduser.username', read_only = True)
+    first_name = serializers.CharField(source = 'log_cuser.first_name', read_only=True)
+    last_name = serializers.CharField(source = 'log_cuser.last_name', read_only = True)
+    username = serializers.CharField(source = 'log_cuser.username', read_only = True)
 
     class Meta(object):
         model = InvoiceLog

@@ -598,7 +598,7 @@ class NewInvoiceLog(APIView):
         logdata=request.data
         user=request.user
         uid=user.id
-        logdata['log_cuser']=id
+        logdata['log_cuser']=int(uid)
         serializer= InvoiceLogSerializer(data=logdata)
         serializer.is_valid(raise_exception=True)
         l=serializer.save()
