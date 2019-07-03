@@ -52,6 +52,13 @@ export function fetchPaymentsHistoryList(id) {
   })
 }
 
+export function fetchEdHistoryList(id) {
+    return request({
+      url: 'invoice/epd/' + id,
+      method: 'get'
+    })
+  }
+
 export function fetchLogs(id) {
   return request({
     url: 'invoice/log/' + id,

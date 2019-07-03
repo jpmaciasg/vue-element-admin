@@ -105,7 +105,7 @@
 &nbsp;
               </el-row>
               <el-row>
-                <el-col :span="6" class="text item"><span class="single-label">Fecha estimada de pago:</span></el-col>
+                <el-col :span="6" class="text item"><span class="single-label">Fecha estimada de pago ({{ countOfEdUpdates }}):</span></el-col>
                 <el-col :span="14">
                   <el-date-picker v-model="postForm.fac_expectedpaymentday" type="date" placeholder="Fecha estimada de pago" class="filter-item" value-format="yyyy-MM-dd" @change="updateInvoiceExpectedPaymentDate" />
                 </el-col>
@@ -299,6 +299,28 @@
                 </el-row>
               </el-card>
             </el-collapse-item>
+            <el-collapse-item title="Fecha esperada de pago" name="6">
+              <el-row>
+                <el-col :span="12" class="text item">
+  &nbsp;
+                  <el-timeline>
+                    <el-timeline-item
+                      v-for="(change, index) in edchanges"
+                      :key="index"
+                      :icon="'caret-right'"
+                      :type="'primary'"
+                      :color="'#0bbd87'"
+                      :size="'normal'"
+                      :timestamp="''"
+                    >
+                      Cambio de [ {{ change.ed_olddate }} ] a [ {{ change.ed_newdate }} ] por {{ change.username }}<!-- <el-button @click="doDeletePayment(payment.his_key)">x</el-button> -->
+                    </el-timeline-item>
+                  </el-timeline>
+
+                </el-col>
+
+              </el-row>
+            </el-collapse-item>
           </el-collapse>
 
         </el-row>
@@ -313,7 +335,7 @@ import Upload from '@/components/Upload/SingleImage3'
 import MDinput from '@/components/MDinput'
 import Sticky from '@/components/Sticky' // 粘性header组件
 import { validURL } from '@/utils/validate'
-import { fetchInvoice, fetchPromotorsList, fetchPaymentsHistoryList, updateInvoice, addInvoicePayment, fetchLogs, addInvoiceLog, deleteLog, deletePayment } from '@/api/invoice'
+import { fetchInvoice, fetchPromotorsList, fetchPaymentsHistoryList, updateInvoice, addInvoicePayment, fetchLogs, addInvoiceLog, deleteLog, deletePayment, fetchEdHistoryList } from '@/api/invoice'
 import { fetchContact, updateContact } from '@/api/client'
 import { searchUser } from '@/api/remote-search'
 import Warning from './Warning'
@@ -393,6 +415,7 @@ export default {
         content: 'Default node',
         timestamp: '2018-04-03 20:46'
       }],
+      edchanges: [],
       invoicelog: [],
       inputAmount: undefined,
       inputPaymentDate: undefined,
@@ -405,6 +428,7 @@ export default {
       invoiceClient: {},
       currentRole: '',
       sumOfPayments: 0,
+      countOfEdUpdates: 0,
       meid: 0
     }
   },
@@ -479,6 +503,7 @@ export default {
       this.fetchPaymentHistory(id)
       this.fetchLogHistory(id)
       this.getPromotors()
+      this.fetchEdHistory(id)
       // this.getClient(id)
     } else {
       this.postForm = {}
@@ -524,6 +549,18 @@ export default {
         console.log(err)
       })
     },
+    fetchEdHistory(id) {
+      fetchEdHistoryList(id).then(response => {
+        this.edchanges = response.data // JSON.parse(response.data);
+        // if (Array.isArray(this.payments)){
+        // console.log(this.payments[0]['his_amount'])
+        // }
+
+        this.countOfEdUpdates = this.edchanges.length
+      }).catch(err => {
+        console.log(err)
+      })
+    },
     /* getClient(id){
       fetchClient(id).then(response => {
         var convert = require('xml-js')
@@ -563,6 +600,7 @@ export default {
         this.recoverForm = Object.assign({}, tmpData)
 
         this.sumOfPayments = this.postForm.fac_payments
+        this.countOfEdUpdates = this.postForm.fac_edupdatescount
         console.log('estatus:')
         console.log(this.postForm.fac_isactive)
 
@@ -685,6 +723,10 @@ export default {
           type: 'success',
           duration: 2000
         })
+
+        if (("fac_expectedpaymentday" in data)){
+            this.fetchEdHistory(this.postForm.fac_key)
+        }
       }).catch(err => {
         console.log(err)
 
@@ -697,6 +739,9 @@ export default {
           type: 'warning',
           duration: 2000
         })
+
+        
+        
       })
     },
     doSaveClient() {

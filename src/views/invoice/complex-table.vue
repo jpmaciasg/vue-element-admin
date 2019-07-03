@@ -127,7 +127,7 @@
       </el-table-column>
       <el-table-column label="Fecha esperada de pago" width="150px" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.fac_expectedpaymentday }}</span>
+          <span>{{ scope.row.fac_expectedpaymentday }}</span><span v-if="scope.row.fac_expectedpaymentday"> [{{scope.row.fac_edupdatescount }}]</span>
         </template>
       </el-table-column>
       <!-- <el-table-column v-if="showReviewer" label="Reviewer" width="110px" align="center">
