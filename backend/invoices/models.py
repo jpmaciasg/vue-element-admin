@@ -295,8 +295,8 @@ class InvoiceEdHistory(models.Model):
 
     ed_key = models.AutoField(primary_key=True)
     ed_invoice = models.ForeignKey(Invoice, to_field= 'fac_key', db_column = 'his_invoice', on_delete = '') 
-    ed_newdate  =models.DateTimeField(null=False, blank=False)
-    ed_olddate  =models.DateTimeField(null=False, blank=False)
+    ed_newdate  =models.DateTimeField(null=True, blank=True)
+    ed_olddate  =models.DateTimeField(null=True, blank=True)
     ed_user = models.ForeignKey(User, to_field='id', db_column = 'ed_user', on_delete = '', blank = True, null = True)
 
     class Meta:

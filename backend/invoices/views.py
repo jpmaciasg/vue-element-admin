@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework import authentication, permissions
 from django.contrib.auth import get_user_model
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from .serializers import InvoiceSerializer, InvoiceNoXmlSerializer, InvoiceLogSerializer, InvoiceReminderSerializer, InvoicePaymentHistorySerializer #, PromotorPieSerializer
+from .serializers import InvoiceSerializer, InvoiceNoXmlSerializer, InvoiceLogSerializer, InvoiceReminderSerializer, InvoicePaymentHistorySerializer,InvoiceEdHistorySerializer #, PromotorPieSerializer
 from django.core import serializers
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -19,7 +19,7 @@ from django.contrib.auth.signals import user_logged_in
 from rest_framework import viewsets
 from rest_framework.pagination import PageNumberPagination
 import simplejson as json
-from .models import Invoice, InvoiceLog, InvoiceReminders, InvoicePaymentHistory
+from .models import Invoice, InvoiceLog, InvoiceReminders, InvoicePaymentHistory, InvoiceEdHistory
 from django.db.models import Avg, Count, Min, Sum, Q
 from datetime import datetime, timedelta
 from rest_framework.exceptions import ParseError
@@ -40,25 +40,39 @@ class UpdateInvoiceAPIView(UpdateAPIView):
         i=Invoice.objects.get(pk=id)
         data=request.data
 
-        ed = request.POST.get('fac_expectedpaymentday', '')
+        ed = data.get('fac_expectedpaymentday','-1') #request.POST.get('fac_expectedpaymentday', '-1')
+        #logger.debug(ed)
+        #print(ed)
         data2={}
-        if '' != ed:
+        if '-1' != ed:
+            #print('entra')
             user=request.user
             uid=user.id
             #edc=i['fac_edupdatescount']
             #data['fac_edupdatescount']=edc + 1
 
             data2['ed_invoice']=id
-            data2['ed_olddate']=i['fac_expectedpaymentday']
-            data2['ed_newdate']=data['fac_expectedpaymentday']
+            if i.fac_expectedpaymentday != None:
+                data2['ed_olddate']=str(i.fac_expectedpaymentday)+'T00:00:00'
+            else:
+                data2['ed_olddate']=None #str(i.fac_expectedpaymentday)+'T00:00:00' #.strftime('%Y-%m-%d')
+            if data['fac_expectedpaymentday'] != None:
+                data2['ed_newdate']= data['fac_expectedpaymentday']+'T00:00:00'
+            else:
+                data2['ed_newdate']=None #data['fac_expectedpaymentday']+'T00:00:00'
             data2['ed_user']=uid
+            #print(data2)
 
             s2= InvoiceEdHistorySerializer(data=data2)
+            #print('creado')
             s2.is_valid(raise_exception=True)
+            #print('valido')
             l2=s2.save()
+            #print('guardo')
 
             qs=InvoiceEdHistory.objects.filter(ed_invoice=id).count()
             data['fac_edupdatescount']=qs
+            #print('asigno')
 
         #logger.debug(data)
         #print(data)
@@ -578,10 +592,13 @@ class InvoiceUpload(APIView):
 
 
 class NewInvoiceLog(APIView):
-    permission_classes = (AllowAny, )
+    permission_classes = (IsAuthenticated,) #AllowAny, )
 
     def post(self,request):
         logdata=request.data
+        user=request.user
+        uid=user.id
+        logdata['log_cuser']=id
         serializer= InvoiceLogSerializer(data=logdata)
         serializer.is_valid(raise_exception=True)
         l=serializer.save()
