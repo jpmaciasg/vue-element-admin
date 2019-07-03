@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Invoice, InvoiceLog, InvoiceReminders, InvoicePaymentHistory
+from .models import Invoice, InvoiceLog, InvoiceReminders, InvoicePaymentHistory,InvoiceEdHistory
 from users.models import User
  
  
@@ -46,7 +46,7 @@ class InvoiceSerializer(serializers.ModelSerializer):
                   'fac_observaciones', 'fac_fechapago', 'fac_fecha',
                   'fac_cdate', 'fac_subtotal', 'fac_iva', 'fac_payments', 
                   'fac_isactive', 'fac_contact', 'fac_lastreminder', 'fac_pagada',
-                  'fac_complemento', 'fac_idclient','fac_iduser', 'first_name', 'last_name', 'username','fac_expectedpaymentday')
+                  'fac_complemento', 'fac_idclient','fac_iduser', 'first_name', 'last_name', 'username','fac_expectedpaymentday','fac_edupdatescount')
 
         datatables_always_serialize = ('fac_key','fac_iduser')
 
@@ -75,7 +75,7 @@ class InvoiceNoXmlSerializer(serializers.ModelSerializer):
                   'fac_observaciones', 'fac_fechapago', 'fac_fecha',
                   'fac_cdate', 'fac_subtotal', 'fac_iva', 'fac_payments', 
                   'fac_isactive', 'fac_contact', 'fac_lastreminder', 'fac_pagada', 'fac_debt','fac_pagadatext',
-                  'fac_complemento', 'fac_idclient','fac_iduser', 'first_name', 'last_name', 'username','fac_expectedpaymentday','fac_isactivetext')
+                  'fac_complemento', 'fac_idclient','fac_iduser', 'first_name', 'last_name', 'username','fac_expectedpaymentday','fac_isactivetext','fac_edupdatescount')
 
         datatables_always_serialize = ('fac_key','fac_iduser','username')
 
@@ -157,6 +157,27 @@ class InvoicePaymentHistorySerializer(serializers.ModelSerializer):
         fields = ('his_key','his_invoice','his_date', 'his_amount', )
 
         datatables_always_serialize = ('his_key',)
+
+class InvoiceEdHistorySerializer(serializers.ModelSerializer):
+    
+    ed_key = serializers.IntegerField(read_only=True)
+    ed_invoice = serializers.PrimaryKeyRelatedField(
+            queryset=Invoice.objects.all(),
+            required=True,
+            write_only=False
+    )
+
+    ed_user = serializers.PrimaryKeyRelatedField(
+            queryset = User.objects.all(),
+            required= True,
+            write_only=False
+    )
+
+    class Meta(object):
+        model = InvoiceEdHistory
+        fields = ('ed_key','ed_invoice','ed_newdate', 'ed_old', 'ed_user',)
+
+        datatables_always_serialize = ('ed_key',)
 '''
 class PromotorPieSerializer(serializers.BaseSerializer):
     promotor = serializers.CharField(read_only=True)

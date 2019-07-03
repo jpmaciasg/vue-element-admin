@@ -35,6 +35,7 @@ class Invoice (models.Model):
     #fac_iduser= models.IntegerField(null = True, default=0)
     fac_iduser=models.ForeignKey(User, to_field='id', db_column = 'fac_iduser', on_delete = '', null=True, blank=True)
     fac_expectedpaymentday = models.DateField(null=True, blank=True)
+    fac_edupdatescount =models.IntegerField(null=True, blank=True, default =0)
 
     @property
     def fac_debt(self):
@@ -289,4 +290,16 @@ class InvoicePaymentHistory(models.Model):
     class Meta:
        managed = False
        db_table = 'cbr_historialpagos'
+
+class InvoiceEdHistory(models.Model):
+
+    ed_key = models.AutoField(primary_key=True)
+    ed_invoice = models.ForeignKey(Invoice, to_field= 'fac_key', db_column = 'his_invoice', on_delete = '') 
+    ed_newdate  =models.DateTimeField(null=False, blank=False)
+    ed_olddate  =models.DateTimeField(null=False, blank=False)
+    ed_user = models.ForeignKey(User, to_field='id', db_column = 'ed_user', on_delete = '', blank = True, null = True)
+
+    class Meta:
+       managed = True
+       db_table = 'cbr_edhistory'
 

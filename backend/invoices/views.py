@@ -39,19 +39,43 @@ class UpdateInvoiceAPIView(UpdateAPIView):
         logger = logging.getLogger('restapi.invoices')
         i=Invoice.objects.get(pk=id)
         data=request.data
-        logger.debug(data)
+
+        ed = request.POST.get('fac_expectedpaymentday', '')
+        data2={}
+        if '' != ed:
+            user=request.user
+            uid=user.id
+            #edc=i['fac_edupdatescount']
+            #data['fac_edupdatescount']=edc + 1
+
+            data2['ed_invoice']=id
+            data2['ed_olddate']=i['fac_expectedpaymentday']
+            data2['ed_newdate']=data['fac_expectedpaymentday']
+            data2['ed_user']=uid
+
+            s2= InvoiceEdHistorySerializer(data=data2)
+            s2.is_valid(raise_exception=True)
+            l2=s2.save()
+
+            qs=InvoiceEdHistory.objects.filter(ed_invoice=id).count()
+            data['fac_edupdatescount']=qs
+
+        #logger.debug(data)
         #print(data)
 
         serializer=InvoiceSerializer(i,data=data)
         #logger.debug(serializer.initial_data['fac_pagada'])
         if serializer.is_valid():
-            logger.debug('antes save update')
-            print('antes save update')
+            #logger.debug('antes save update')
+            #print('antes save update')
             #print(serializer.validated_data['fac_isactive'])
             #logger.debug(serializer.validated_data['fac_pagada'])
             serializer.save(raise_exception=True)
-            logger.debug(serializer.data['fac_isactive'])
-            print(serializer.data['fac_isactive'])
+
+            #logger.debug(serializer.data['fac_isactive'])
+            #print(serializer.data['fac_isactive'])
+
+
             return Response(serializer.data)
 
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
@@ -610,6 +634,46 @@ class NewInvoicePaymentHistory(APIView):
         i.save()
 
         return Response(serializer.data, status=status.HTTP_200_OK) #1_CREATED)
+
+class InvoiceEdHistoryListingAPIView(APIView):
+    permission_classes = (IsAuthenticated,)
+    #permission_classes = (AllowAny,)
+
+    #queryset = User.objects.all().order_by('firstname')
+    serializer_class = InvoiceEdHistorySerializer
+
+    def get(self, request,*args,**kwargs):
+        id = self.kwargs['id']
+        queryset = InvoiceEdHistory.objects.all().filter(ed_invoice=id).order_by('-ed_newdate')
+        
+        serializer = InvoicePaymentHistorySerializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def delete(self, request, *args, **kwargs):
+        id = self.kwargs['id']
+
+        payment= InvoicePaymentHistory.objects.all().filter(his_key=int(id))
+        if payment:
+            inv = payment[0].his_invoice
+
+            InvoicePaymentHistory.objects.all().filter(his_key=int(id)).delete()
+
+            qs=InvoicePaymentHistory.objects.filter(his_invoice=inv.fac_key).aggregate(s=Sum('his_amount'))
+            payed=qs['s']
+
+            if None == payed:
+                result=0
+            else:
+                result=payed
+
+            #paid=InvoicePaymentHistory.objects.get_sum_payments(id=inv)
+            #print(result)
+            i=Invoice.objects.get(pk=inv)
+            i.fac_payments=result
+            i.save()
+ 
+
+        return Response(status=status.HTTP_200_OK)
 
 def jwt_response_payload_handler(token, user=None, request=None):
     return {
