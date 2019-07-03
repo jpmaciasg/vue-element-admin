@@ -179,7 +179,7 @@ class InvoiceEdHistorySerializer(serializers.ModelSerializer):
 
     class Meta(object):
         model = InvoiceEdHistory
-        fields = ('ed_key','ed_invoice','ed_newdate', 'ed_olddate', 'ed_user','username',)
+        fields = ('ed_key','ed_invoice','ed_newdate', 'ed_olddate', 'ed_user','username','ed_date',)
 
         datatables_always_serialize = ('ed_key',)
 '''
