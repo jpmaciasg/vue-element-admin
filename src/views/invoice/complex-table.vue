@@ -149,8 +149,8 @@
       <el-table-column label="Pagos" class-name="status-col" width="120">
         <template slot-scope="{row}">
           <el-tag :type="row.fac_pagada | statusPFilter">
-            {{ row.fac_pagada | statusPText }}
-          </el-tag>
+            {{ row.fac_pagada | statusPText }} 
+          </el-tag><br /><span>[ {{ daysCount (row.fac_fechapago, row.fac_fecha, row.fac_pagada) }} ]</span>
         </template>
       </el-table-column>
 
@@ -192,7 +192,7 @@
     </el-table>
     <el-row>
       <el-col :span="6">
-  &nbsp;
+        &nbsp;
       </el-col>
       <el-col :span="6">
         <span class="filter-item">Total: {{ suma | parseMoney }} </span>
@@ -204,6 +204,7 @@
         <span class="filter-item">Pendiente: {{ suma - pagado | parseMoney }}</span>
       </el-col>
     </el-row>
+
     <pagination
       v-show="total>0"
       :total="total"
@@ -346,7 +347,23 @@ export default {
         console.log(e)
         return ''
       }
-    }
+    }/*, 
+    daysCount(value,start,status) {
+        var dif;
+        var d2;
+        var d1= new Date(start);
+        console.log(d1);
+
+        if(status==1){
+            d2=new Date(value);
+            console.log(d2);
+        }
+        else{
+            d2=new Date();   
+        }
+        dif=Math.round((d2.getTime()-d1.getTime())/(1000*60*60*24));
+        return  dif;
+    }*/
   },
   data() {
     return {
@@ -416,6 +433,7 @@ export default {
   },
   created() {
     // return this.$store.state.tagsView.cachedViews
+    this.filterOptions()
     this.getTotalRows()
     // this.getSumInvoices()
     // this.getPaymentsInvoices()
@@ -441,7 +459,7 @@ export default {
     console.log('uid')
     this.userid = this.$store.state.user.userid
     console.log(this.userid)
-    this.filterOptions()
+    //this.filterOptions()
     this.filterPermissions = this.filterRolePermissions
   },
   methods: {
@@ -468,6 +486,7 @@ export default {
     },
     getList() {
       this.listLoading = true
+      //console.log(this.listQuery);
       fetchList(this.listQuery).then(response => {
         this.list = response.data
         // this.total = this.list.total //response.data.total
@@ -484,6 +503,8 @@ export default {
       this.listQuery.countrows = '1'
       this.listQuery.sumrows = ''
       this.listQuery.payedrows = ''
+      //console.log('antes count');
+      //console.log(this.listQuery);
       fetchList(this.listQuery).then(response => {
         // this.list = response.data
         this.total = parseInt(response.data)
@@ -778,6 +799,20 @@ export default {
       }
 
       return ''
+    },
+    daysCount(value,start,status) {
+        var dif;
+        var d2;
+        var d1= new Date(start);
+
+        if(status==1 && value != null){
+            d2=new Date(value);
+        }
+        else{
+            d2=new Date();   
+        }
+        dif=Math.round((d2.getTime()-d1.getTime())/(1000*60*60*24));
+        return  dif;
     }
   },
   computed: {
@@ -868,8 +903,8 @@ export default {
 
       return permissionsGeneral
     },
-    filterOptions1() {
-      var filterOptionsGeneral = {
+    fo() {
+      var foGeneral = {
         page: 1,
         limit: 20,
         promotor: undefined,
@@ -892,20 +927,20 @@ export default {
         payedrows: ''
       }
       if (this.currentRole == 'promotor') {
-        filterOptionsGeneral['promotor'] = this.$store.state.user.userid
-        filterOptionsGeneral['pay_1'] = false
-        filterOptionsGeneral['pay_2'] = true
-        filterOptionsGeneral['pay_3'] = false
-        filterOptionsGeneral['act_0'] = false
-        filterOptionsGeneral['act_1'] = true
+        foGeneral['promotor'] = this.$store.state.user.userid
+        foGeneral['pay_1'] = false
+        foGeneral['pay_2'] = true
+        foGeneral['pay_3'] = false
+        foGeneral['act_0'] = false
+        foGeneral['act_1'] = true
       }
       if (this.currentRole == 'operator') {
-        filterOptionsGeneral['promotor'] = undefined
-        filterOptionsGeneral['pay_1'] = false
-        filterOptionsGeneral['pay_2'] = true // true
-        filterOptionsGeneral['pay_3'] = false
-        filterOptionsGeneral['act_0'] = false
-        filterOptionsGeneral['act_1'] = true // true
+        foGeneral['promotor'] = undefined
+        foGeneral['pay_1'] = false
+        foGeneral['pay_2'] = true // true
+        foGeneral['pay_3'] = false
+        foGeneral['act_0'] = false
+        foGeneral['act_1'] = true // true
       }
       if (this.roles.includes('admin')) {
 
@@ -914,15 +949,15 @@ export default {
 
       }
       if (this.currentRole == 'supervisor') {
-        filterOptionsGeneral['promotor'] = undefined
-        filterOptionsGeneral['pay_1'] = false
-        filterOptionsGeneral['pay_2'] = true
-        filterOptionsGeneral['pay_3'] = false
-        filterOptionsGeneral['act_0'] = false
-        filterOptionsGeneral['act_1'] = true
+        foGeneral['promotor'] = undefined
+        foGeneral['pay_1'] = false
+        foGeneral['pay_2'] = true
+        foGeneral['pay_3'] = false
+        foGeneral['act_0'] = false
+        foGeneral['act_1'] = true
       }
       // console.log(filterOptionsGeneral);
-      return filterOptionsGeneral
+      return foGeneral
     }
   }
 }
