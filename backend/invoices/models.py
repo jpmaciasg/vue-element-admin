@@ -304,3 +304,24 @@ class InvoiceEdHistory(models.Model):
        managed = True
        db_table = 'cbr_edhistory'
 
+class InvoiceFileLog(models.Model):
+
+    ifl_key = models.AutoField(primary_key=True)
+    ifl_filepath=models.TextField(null=False, blank=False)
+    ifl_date = models.DateTimeField(null=False, blank=False, auto_now_add=True) 
+    ifl_pdate = models.DateTimeField(null=True, blank=True, auto_now_add=True) 
+    ifl_status = models.CharField(max_length=30, null = False, default='PENDING')
+    ifl_invoice=models.ForeignKey(Invoice, to_field='fac_key', db_column = 'ifl_invoice', on_delete = '', null=True, blank=True)
+
+    class Meta:
+       managed = True
+       db_table = 'cbr_invoicefilelog'
+
+    def create_log(self, filepath):
+
+        logfile = {}
+        logfile['ifl_filepath'] = xmlstr #xmlcontent
+        i=InvoiceFileLog(**logfile)
+        i.save()
+
+

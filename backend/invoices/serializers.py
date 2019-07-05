@@ -182,6 +182,23 @@ class InvoiceEdHistorySerializer(serializers.ModelSerializer):
         fields = ('ed_key','ed_invoice','ed_newdate', 'ed_olddate', 'ed_user','username','ed_date',)
 
         datatables_always_serialize = ('ed_key',)
+
+class InvoiceFileLogSerializer(serializers.ModelSerializer):
+    
+    ifl_key = serializers.IntegerField(read_only=True)
+    ifl_invoice = serializers.PrimaryKeyRelatedField(
+            queryset=Invoice.objects.all(),
+            required=True,
+            write_only=False
+    )
+
+    class Meta(object):
+        model = InvoiceEdHistory
+        fields = ('ifl_key','ifl_filepath','ifl_date', 'ifl_pdate', 'ifl_status','ifl_invoice',)
+
+        datatables_always_serialize = ('ifl_key',)
+
+
 '''
 class PromotorPieSerializer(serializers.BaseSerializer):
     promotor = serializers.CharField(read_only=True)
