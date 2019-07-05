@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Invoice, InvoiceLog, InvoiceReminders, InvoicePaymentHistory,InvoiceEdHistory
+from .models import Invoice, InvoiceLog, InvoiceReminders, InvoicePaymentHistory,InvoiceEdHistory, InvoiceFileLog
 from users.models import User
  
  
@@ -193,7 +193,7 @@ class InvoiceFileLogSerializer(serializers.ModelSerializer):
     )
 
     class Meta(object):
-        model = InvoiceEdHistory
+        model = InvoiceFileLog
         fields = ('ifl_key','ifl_filepath','ifl_date', 'ifl_pdate', 'ifl_status','ifl_invoice',)
 
         datatables_always_serialize = ('ifl_key',)

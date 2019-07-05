@@ -320,7 +320,7 @@ class InvoiceFileLog(models.Model):
     def create_log(self, filepath):
 
         logfile = {}
-        logfile['ifl_filepath'] = xmlstr #xmlcontent
+        logfile['ifl_filepath'] = filepath  #xmlcontent
         i=InvoiceFileLog(**logfile)
         i.save()
 
