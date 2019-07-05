@@ -87,6 +87,7 @@
                 <el-col :span="6" class="text item"><span class="single-label">Cobrado:</span></el-col>
                 <el-col :span="14">
                   <el-date-picker v-model="postForm.fac_fechapago" type="date" placeholder="Cobrado" class="filter-item" value-format="yyyy-MM-dd" v-bind="isPayedOptionEditable" @change="updateInvoicePaymentDate" />
+                  <span>[ {{ daysCount (postForm.fac_fechapago, postForm.fac_fecha, postForm.fac_pagada) }} ]</span>
                 </el-col>
               </el-row>
               <el-row>
@@ -918,6 +919,19 @@ export default {
     },
     handleChange(val) {
       console.log(val)
+    },
+    daysCount(value, start, status) {
+      var dif
+      var d2
+      var d1 = new Date(start)
+
+      if (status == 1 && value != null) {
+        d2 = new Date(value)
+      } else {
+        d2 = new Date()
+      }
+      dif = Math.round((d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24))
+      return dif
     }
   },
   filters: {

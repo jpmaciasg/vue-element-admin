@@ -149,7 +149,7 @@
       <el-table-column label="Pagos" class-name="status-col" width="120">
         <template slot-scope="{row}">
           <el-tag :type="row.fac_pagada | statusPFilter">
-            {{ row.fac_pagada | statusPText }} 
+            {{ row.fac_pagada | statusPText }}
           </el-tag><br /><span>[ {{ daysCount (row.fac_fechapago, row.fac_fecha, row.fac_pagada) }} ]</span>
         </template>
       </el-table-column>
@@ -347,7 +347,7 @@ export default {
         console.log(e)
         return ''
       }
-    }/*, 
+    }/*,
     daysCount(value,start,status) {
         var dif;
         var d2;
@@ -359,7 +359,7 @@ export default {
             console.log(d2);
         }
         else{
-            d2=new Date();   
+            d2=new Date();
         }
         dif=Math.round((d2.getTime()-d1.getTime())/(1000*60*60*24));
         return  dif;
@@ -459,7 +459,7 @@ export default {
     console.log('uid')
     this.userid = this.$store.state.user.userid
     console.log(this.userid)
-    //this.filterOptions()
+    // this.filterOptions()
     this.filterPermissions = this.filterRolePermissions
   },
   methods: {
@@ -486,7 +486,8 @@ export default {
     },
     getList() {
       this.listLoading = true
-      //console.log(this.listQuery);
+      // console.log(this.listQuery);
+      //this.$store.dispatch('search/saveQuery', this.listQuery)
       fetchList(this.listQuery).then(response => {
         this.list = response.data
         // this.total = this.list.total //response.data.total
@@ -503,8 +504,8 @@ export default {
       this.listQuery.countrows = '1'
       this.listQuery.sumrows = ''
       this.listQuery.payedrows = ''
-      //console.log('antes count');
-      //console.log(this.listQuery);
+      // console.log('antes count');
+      // console.log(this.listQuery);
       fetchList(this.listQuery).then(response => {
         // this.list = response.data
         this.total = parseInt(response.data)
@@ -722,7 +723,9 @@ export default {
       }))
     },
     filterOptions() {
-      this.listQuery['page'] = 1
+        
+
+      /*this.listQuery['page'] = 1
       this.listQuery['limit'] = 20
       this.listQuery['promotor'] = undefined
       this.listQuery['search'] = ''
@@ -741,7 +744,8 @@ export default {
       this.listQuery['export'] = ''
       this.listQuery['countrows'] = ''
       this.listQuery['sumrows'] = ''
-      this.listQuery['payedrows'] = ''
+      this.listQuery['payedrows'] = '' */
+      this.listQuery=Object.assign({},this.$store.state.search.query);
 
       if (this.currentRole == 'promotor') {
         this.listQuery['promotor'] = this.$store.state.user.userid
@@ -773,6 +777,7 @@ export default {
         this.listQuery['act_0'] = false
         this.listQuery['act_1'] = true
       }
+      
     // console.log(filterOptionsGeneral);
       // return filterOptionsGeneral
     },
@@ -800,24 +805,24 @@ export default {
 
       return ''
     },
-    daysCount(value,start,status) {
-        var dif;
-        var d2;
-        var d1= new Date(start);
+    daysCount(value, start, status) {
+      var dif
+      var d2
+      var d1 = new Date(start)
 
-        if(status==1 && value != null){
-            d2=new Date(value);
-        }
-        else{
-            d2=new Date();   
-        }
-        dif=Math.round((d2.getTime()-d1.getTime())/(1000*60*60*24));
-        return  dif;
+      if (status == 1 && value != null) {
+        d2 = new Date(value)
+      } else {
+        d2 = new Date()
+      }
+      dif = Math.round((d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24))
+      return dif
     }
   },
   computed: {
     ...mapGetters([
-      'roles'
+      'roles',
+      'query'
     ]),
     enabledPromotorFilter() {
       var r = {}

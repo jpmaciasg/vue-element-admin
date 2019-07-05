@@ -13,6 +13,7 @@ const getters = {
   errorLogs: state => state.errorLog.logs,
   userid: state => state.user.id,
   username: state => state.user.username,
-  email: state => state.user.email
+  email: state => state.user.email,
+  query: state => state.search.query
 }
 export default getters
