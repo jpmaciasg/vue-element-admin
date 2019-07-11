@@ -279,7 +279,7 @@ import { fetchList, fetchPv, updateArticle, fetchFirstUnpaidDate, fetchPromotors
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
-import { mapGetters } from 'vuex'
+import { mapGetters, mapMutations, mapActions } from 'vuex'
 
 const calendarTypeOptions = [
   { key: 'CN', display_name: 'China' },
@@ -433,6 +433,30 @@ export default {
   },
   created() {
     // return this.$store.state.tagsView.cachedViews
+    //console.log('created')
+    //console.log(this.query)
+    this.listQuery=Object.assign({}, this.query) || {
+    page: 1,
+    limit: 20,
+    promotor: undefined,
+    search: '',
+    pay_1: false,
+    pay_2: false, // true
+    pay_3: false, // true
+    act_1: false, // true
+    act_0: false, // false
+    sort: '-fac_fecha',
+    from: undefined,
+    to: undefined,
+    fromp: undefined,
+    top: undefined,
+    fromc: undefined,
+    toc: undefined,
+    export: '',
+    countrows: '',
+    sumrows: '',
+    payedrows: ''
+  }
     this.filterOptions()
     this.getTotalRows()
     // this.getSumInvoices()
@@ -456,13 +480,28 @@ export default {
       this.currentRole = 'supervisor'
     }
 
-    console.log('uid')
+    //console.log('uid')
     this.userid = this.$store.state.user.userid
-    console.log(this.userid)
+    //console.log(this.userid)
     // this.filterOptions()
     this.filterPermissions = this.filterRolePermissions
   },
   methods: {
+      ...mapMutations({
+          'SET_QUERY': 'search/SET_QUERY'
+  }),
+      ...mapActions({               // Add this
+      'saveQuery': 'search/saveQuery'
+  }),
+    saveQueryParams: function(){
+        //console.log('in save params')
+        //console.log(this.listQuery)
+        this.SET_QUERY(this.listQuery);
+        //console.log('after save')
+        //console.log(this.listQuery)
+        //console.log('after save, query:')
+        //console.log(this.query)
+    },
     getMinDate() {
       var params = {
         from: this.yearNow + '-' + this.monthNow + '-01',
@@ -486,6 +525,7 @@ export default {
     },
     getList() {
       this.listLoading = true
+      this.saveQueryParams()
       // console.log(this.listQuery);
       // this.$store.dispatch('search/saveQuery', this.listQuery)
       fetchList(this.listQuery).then(response => {
@@ -509,7 +549,7 @@ export default {
       fetchList(this.listQuery).then(response => {
         // this.list = response.data
         this.total = parseInt(response.data)
-        console.log('got count' + this.total)
+        //console.log('got count' + this.total)
 
         this.listQuery.countrows = ''
         this.listQuery.sumrows = '1'
@@ -518,7 +558,7 @@ export default {
           // this.list = response.data
           this.suma = parseInt(response.data)
           // this.listQuery.sumrows = ''
-          console.log('got sum' + this.suma)
+          //console.log('got sum' + this.suma)
 
           this.listQuery.countrows = ''
           this.listQuery.sumrows = ''
@@ -527,7 +567,7 @@ export default {
             // this.list = response.data
             this.pagado = parseInt(response.data)
             // this.listQuery.payedrows = ''
-            console.log('got payed' + this.pagado)
+            //console.log('got payed' + this.pagado)
             this.listQuery.countrows = ''
             this.listQuery.sumrows = ''
             this.listQuery.payedrows = ''
@@ -742,8 +782,8 @@ export default {
       this.listQuery['export'] = ''
       this.listQuery['countrows'] = ''
       this.listQuery['sumrows'] = ''
-      this.listQuery['payedrows'] = '' */
-      this.listQuery = Object.assign({}, this.$store.state.search.query)
+      this.listQuery['payedrows'] = '' JP*/
+      //this.listQuery = Object.assign({}, this.$store.state.search.query)
 
       if (this.currentRole == 'promotor') {
         this.listQuery['promotor'] = this.$store.state.user.userid
@@ -775,6 +815,7 @@ export default {
         this.listQuery['act_0'] = false
         this.listQuery['act_1'] = true
       }
+      //this.saveQuery()
 
     // console.log(filterOptionsGeneral);
       // return filterOptionsGeneral

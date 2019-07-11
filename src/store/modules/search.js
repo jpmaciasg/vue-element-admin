@@ -1,7 +1,7 @@
 import Cookies from 'js-cookie'
 
 const state = {
-  query: Cookies.get('query') || {
+  query: Cookies.getJSON('query') || {
     page: 1,
     limit: 20,
     promotor: undefined,
@@ -27,7 +27,11 @@ const state = {
 
 const mutations = {
   SET_QUERY: (state, query) => {
-    state.query = query
+      //console.log('en set_query');
+      //console.log(query);
+    state.query = Object.assign({}, query)//query
+    //console.log('after assign')
+    //console.log(state.query)
     Cookies.set('query', state.query)
   }
 }
