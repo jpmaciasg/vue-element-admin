@@ -24,7 +24,7 @@ const invoiceRouter = {
     {
       path: 'add',
       component: () => import('@/views/invoice/dynamic-table/index'),
-      name: 'DynamicTable',
+      name: 'InvoiceListTable',
       meta: { title: 'Agregar facturas' }
     },
     {
@@ -43,7 +43,25 @@ const invoiceRouter = {
         activeMenu: '/invoice/list'
       },
       hidden: true
-    }
+    },
+    {
+        path: 'complements',
+        component: () => import('@/views/invoice/invoice-complement'),
+        name: 'Complements',
+        meta: {
+          title: 'Complementos',
+          roles: ['admin', 'operator', 'promotor', 'supervisor', 'executive']
+        }
+    }/*,
+    {
+        path: 'invoicefilelog',
+        component: () => import('@/views/invoice/complex-table'),
+        name: 'InvoiceFileLog',
+        meta: {
+          title: 'Historico de archivos',
+          roles: ['admin', 'operator']
+        }
+    }*/
   ]
 }
 export default invoiceRouter

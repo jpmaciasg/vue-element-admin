@@ -312,7 +312,7 @@
                       :type="'primary'"
                       :color="'#0bbd87'"
                       :size="'normal'"
-                      :timestamp="change.ed_date  | humanDate"
+                      :timestamp="change.ed_date | humanDate"
                     >
                       Cambio de [ {{ change.ed_olddate }} ] a [ {{ change.ed_newdate }} ] por {{ change.username }}<!-- <el-button @click="doDeletePayment(payment.his_key)">x</el-button> -->
                     </el-timeline-item>

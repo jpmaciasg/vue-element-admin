@@ -1,27 +1,27 @@
 import Cookies from 'js-cookie'
 
 const state = {
-  query:  Cookies.get('query') || {
+  query: Cookies.get('query') || {
     page: 1,
-        limit: 20,
-        promotor: undefined,
-        search: '',
-        pay_1: false,
-        pay_2: false, // true
-        pay_3: false, // true
-        act_1: false, // true
-        act_0: false, // false
-        sort: '-fac_fecha',
-        from: undefined,
-        to: undefined,
-        fromp: undefined,
-        top: undefined,
-        fromc: undefined,
-        toc: undefined,
-        export: '',
-        countrows: '',
-        sumrows: '',
-        payedrows: ''
+    limit: 20,
+    promotor: undefined,
+    search: '',
+    pay_1: false,
+    pay_2: false, // true
+    pay_3: false, // true
+    act_1: false, // true
+    act_0: false, // false
+    sort: '-fac_fecha',
+    from: undefined,
+    to: undefined,
+    fromp: undefined,
+    top: undefined,
+    fromc: undefined,
+    toc: undefined,
+    export: '',
+    countrows: '',
+    sumrows: '',
+    payedrows: ''
   }
 }
 
