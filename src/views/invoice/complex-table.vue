@@ -586,6 +586,18 @@ export default {
       })
     },
     handleReset() {
+        this.listQuery.search=''
+        this.listQuery.limit=20
+        this.listQuery.top=undefined
+        this.listQuery.fromc=undefined
+        this.listQuery.sort='-fac_fecha'
+        this.listQuery.fromp=undefined
+        this.listQuery.from=undefined
+        this.listQuery.to=undefined
+        this.listQuery.top=undefined
+        this.listQuery.countrows=''
+        this.listQuery.sumrows=''
+        this.listQuery.payedrows=''
       /* var r = {
         page: 1,
         limit: 20,
