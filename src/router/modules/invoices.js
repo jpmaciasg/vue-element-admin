@@ -17,7 +17,7 @@ const invoiceRouter = {
       component: () => import('@/views/invoice/complex-table'),
       name: 'ComplexTable',
       meta: {
-        title: 'Listado',
+        title: 'Lista de facturas',
         roles: ['admin', 'operator', 'promotor', 'supervisor', 'executive']
       }
     },

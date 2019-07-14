@@ -1,28 +1,37 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.title" placeholder="Title" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-select v-model="listQuery.importance" placeholder="Imp" clearable style="width: 90px" class="filter-item">
-        <el-option v-for="item in importanceOptions" :key="item" :label="item" :value="item" />
+      <el-input v-model="listQuery.search" placeholder="Usuario, nombre, apellido" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      
+      
+      <el-select v-model="listQuery.promotor" placeholder="Perfil" clearable style="width: 210px" class="filter-item" v-bind="enabledPromotorFilter">
+        <el-option key="-1" label="-- Todos los perfiles --" value="0" />
+        <el-option v-for="item in promotorList" :key="item.role_key" :label="item.role_label" :value="item.role_key" />
       </el-select>
-      <el-select v-model="listQuery.type" placeholder="Type" clearable class="filter-item" style="width: 130px">
-        <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name+'('+item.key+')'" :value="item.key" />
-      </el-select>
-      <el-select v-model="listQuery.sort" style="width: 140px" class="filter-item" @change="handleFilter">
+      &nbsp;&nbsp;&nbsp;<span class="filter-item" style="font-weight: bold">Estado: </span>
+      <!-- <el-checkbox-group class="filter-item"> -->
+      <el-checkbox v-model="listQuery.act_1" label="Activo" class="filter-item" v-bind="enabledA1Filter" />
+      <el-checkbox v-model="listQuery.act_0" label="Deshabilitado" class="filter-item" v-bind="enabledA0Filter" />
+
+    
+
+
+      <!-- <el-select v-model="listQuery.sort" style="width: 140px" class="filter-item" @change="handleFilter">
         <el-option v-for="item in sortOptions" :key="item.key" :label="item.label" :value="item.key" />
-      </el-select>
+      </el-select> -->
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
-        Search
+        Buscar
       </el-button>
-      <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate">
-        Nuevo
+      <!-- <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate">
+        Add
+      </el-button> -->
+      <!-- <el-button v-waves :loading="downloadLoading" class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">
+        Exportar
+      </el-button> -->
+      <el-button v-waves class="filter-item" type="primary" @click="handleReset">
+        Borrar filtros
       </el-button>
-      <el-button v-waves :loading="downloadLoading" class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">
-        Export
-      </el-button>
-      <el-checkbox v-model="showReviewer" class="filter-item" style="margin-left:15px;" @change="tableKey=tableKey+1">
-        reviewer
-      </el-checkbox>
+
     </div>
 
     <el-table
@@ -33,124 +42,86 @@
       fit
       highlight-current-row
       style="width: 100%;"
+      :row-class-name="tableRowClassName"
+      lazy
       @sort-change="sortChange"
     >
-      <el-table-column label="ID" prop="id" sortable="custom" align="center" width="80">
+      <el-table-column label="ID" prop="id" sortable="custom" align="left" width="80">
         <template slot-scope="scope">
           <span>{{ scope.row.id }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="Date" width="150px" align="center">
+      <el-table-column label="Usuario" width="180px" align="left">
         <template slot-scope="scope">
-          <span>{{ scope.row.timestamp | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
+          <span>{{ scope.row.username }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="Title" min-width="150px">
+      <el-table-column label="Nombre" sortable="custom" align="left" width="400">
+        <template slot-scope="scope">
+          <span>{{ scope.row.first_name }} {{ scope.row.last_name }} </span>
+        </template>
+      </el-table-column>
+      
+      <el-table-column label="Perfil" min-width="100px">
+        <template slot-scope="scope">
+          <span>{{ scope.row.role_label }}</span>
+        </template>
+      </el-table-column>
+
+
+
+
+      <el-table-column label="Estatus" class-name="status-col" width="120">
         <template slot-scope="{row}">
-          <span class="link-type" @click="handleUpdate(row)">{{ row.title }}</span>
-          <el-tag>{{ row.type | typeFilter }}</el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column label="Author" width="110px" align="center">
-        <template slot-scope="scope">
-          <span>{{ scope.row.author }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column v-if="showReviewer" label="Reviewer" width="110px" align="center">
-        <template slot-scope="scope">
-          <span style="color:red;">{{ scope.row.reviewer }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="Imp" width="80px">
-        <template slot-scope="scope">
-          <svg-icon v-for="n in +scope.row.importance" :key="n" icon-class="star" class="meta-item__icon" />
-        </template>
-      </el-table-column>
-      <el-table-column label="Readings" align="center" width="95">
-        <template slot-scope="{row}">
-          <span v-if="row.pageviews" class="link-type" @click="handleFetchPv(row.pageviews)">{{ row.pageviews }}</span>
-          <span v-else>0</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="Status" class-name="status-col" width="100">
-        <template slot-scope="{row}">
-          <el-tag :type="row.status | statusFilter">
-            {{ row.status }}
+          <el-tag :type="row.is_active | statusIFilter">
+            {{ row.is_active | statusText }}
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="Actions" align="center" width="230" class-name="small-padding fixed-width">
+
+
+
+      <el-table-column label=" " align="center" width="100" class-name="small-padding fixed-width">
         <template slot-scope="{row}">
-          <el-button type="primary" size="mini" @click="handleUpdate(row)">
-            Edit
-          </el-button>
-          <el-button v-if="row.status!='published'" size="mini" type="success" @click="handleModifyStatus(row,'published')">
-            Publish
-          </el-button>
-          <el-button v-if="row.status!='draft'" size="mini" @click="handleModifyStatus(row,'draft')">
-            Draft
-          </el-button>
-          <el-button v-if="row.status!='deleted'" size="mini" type="danger" @click="handleModifyStatus(row,'deleted')">
-            Delete
-          </el-button>
+          <router-link :to="'/users/edit/'+row.id">
+            <el-button type="primary" size="small" icon="el-icon-edit">
+              Ver
+            </el-button>
+          </router-link>
         </template>
       </el-table-column>
     </el-table>
 
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
-
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
-      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
-        <el-form-item label="Type" prop="type">
-          <el-select v-model="temp.type" class="filter-item" placeholder="Please select">
-            <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="Date" prop="timestamp">
-          <el-date-picker v-model="temp.timestamp" type="datetime" placeholder="Please pick a date" />
-        </el-form-item>
-        <el-form-item label="Title" prop="title">
-          <el-input v-model="temp.title" />
-        </el-form-item>
-        <el-form-item label="Status">
-          <el-select v-model="temp.status" class="filter-item" placeholder="Please select">
-            <el-option v-for="item in statusOptions" :key="item" :label="item" :value="item" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="Imp">
-          <el-rate v-model="temp.importance" :colors="['#99A9BF', '#F7BA2A', '#FF9900']" :max="3" style="margin-top:8px;" />
-        </el-form-item>
-        <el-form-item label="Remark">
-          <el-input v-model="temp.remark" :autosize="{ minRows: 2, maxRows: 4}" type="textarea" placeholder="Please input" />
-        </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible = false">
-          Cancel
-        </el-button>
-        <el-button type="primary" @click="dialogStatus==='create'?createData():updateData()">
-          Confirm
-        </el-button>
-      </div>
-    </el-dialog>
-
-    <el-dialog :visible.sync="dialogPvVisible" title="Reading statistics">
-      <el-table :data="pvData" border fit highlight-current-row style="width: 100%">
-        <el-table-column prop="key" label="Channel" />
-        <el-table-column prop="pv" label="Pv" />
-      </el-table>
-      <span slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="dialogPvVisible = false">Confirm</el-button>
-      </span>
-    </el-dialog>
+    <pagination
+      v-show="total>0"
+      :total="total"
+      :page.sync="listQuery.page"
+      :limit.sync="listQuery.limit"
+      @pagination="getList"
+    />
   </div>
 </template>
+<style>
+  .el-table .warning-row {
+   /*background: oldlace;*/
+    background: #fcebcb;
+  }
+
+  .el-table .danger-row{
+    background: #ff49491a;
+  }
+
+  .el-table .success-row {
+    background: #f0f9eb;
+  }
+</style>
 
 <script>
-import { fetchList, fetchPv, createArticle, updateArticle } from '@/api/article'
+import { fetchList, fetchRolesList } from '@/api/user'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
+import { mapGetters, mapMutations, mapActions } from 'vuex'
 
 const calendarTypeOptions = [
   { key: 'CN', display_name: 'China' },
@@ -170,46 +141,92 @@ export default {
   components: { Pagination },
   directives: { waves },
   filters: {
-    statusFilter(status) {
+    statusPFilter(status) {
+      const statusPMap = {
+        '1': 'success',
+        '3': 'info',
+        '2': 'danger'
+      }
+      return statusPMap[status]
+    },
+    statusIFilter(status) {
       const statusMap = {
-        published: 'success',
-        draft: 'info',
-        deleted: 'danger'
+        true: 'success',
+        false: 'danger'
       }
       return statusMap[status]
     },
+    statusPText(status) {
+      const statusPTextMap = {
+        '1': 'Pagada',
+        '2': 'No pagada',
+        '3': 'Confirmar'
+      }
+      return statusPTextMap[status]
+    },
+    statusText(status) {
+      const statusTextMap = {
+        true: 'Activo',
+        false: 'Inhabilitado'
+      }
+      return statusTextMap[status]
+    },
     typeFilter(type) {
       return calendarTypeKeyValue[type]
-    }
+    },
+/*,
+    daysCount(value,start,status) {
+        var dif;
+        var d2;
+        var d1= new Date(start);
+        console.log(d1);
+
+        if(status==1){
+            d2=new Date(value);
+            console.log(d2);
+        }
+        else{
+            d2=new Date();
+        }
+        dif=Math.round((d2.getTime()-d1.getTime())/(1000*60*60*24));
+        return  dif;
+    }*/
   },
   data() {
     return {
       tableKey: 0,
       list: null,
       total: 0,
+      suma: 0,
+      pagado: 0,
       listLoading: true,
       listQuery: {
         page: 1,
         limit: 20,
-        importance: undefined,
-        title: undefined,
-        type: undefined,
-        sort: '+id'
+        promotor: undefined,
+        search: '',
+        pay_1: false,
+        pay_2: false, // true
+        pay_3: false, // true
+        act_1: false, // true
+        act_0: false, // false
+        sort: '-fac_fecha',
+        from: undefined,
+        to: undefined,
+        fromp: undefined,
+        top: undefined,
+        fromc: undefined,
+        toc: undefined,
+        export: '',
+        countrows: '',
+        sumrows: '',
+        payedrows: ''
       },
-      importanceOptions: [1, 2, 3],
+      // importanceOptions: [{ label: 'ID Ascending', key: '1' }, { label: 'ID Descending', key: '2' }, { label: 'Por confirmar', key: '2' }],
       calendarTypeOptions,
-      sortOptions: [{ label: 'ID Ascending', key: '+id' }, { label: 'ID Descending', key: '-id' }],
+      // sortOptions: [{ label: 'ID Ascending', key: '+id' }, { label: 'ID Descending', key: '-id' }],
       statusOptions: ['published', 'draft', 'deleted'],
-      showReviewer: false,
-      temp: {
-        id: undefined,
-        importance: 1,
-        remark: '',
-        timestamp: new Date(),
-        title: '',
-        type: '',
-        status: 'published'
-      },
+      // showReviewer: false,
       dialogFormVisible: false,
       dialogStatus: '',
       textMap: {
@@ -218,52 +235,232 @@ export default {
       },
       dialogPvVisible: false,
       pvData: [],
-      rules: {
-        type: [{ required: true, message: 'type is required', trigger: 'change' }],
-        timestamp: [{ type: 'date', required: true, message: 'timestamp is required', trigger: 'change' }],
-        title: [{ required: true, message: 'title is required', trigger: 'blur' }]
-      },
-      downloadLoading: false
+      downloadLoading: false,
+      unpaidDate: '',
+      promotorList: [],
+      showPaidInvoices: false,
+      currentRole: '',
+      filterPermissions: {},
+      userid: 0
     }
   },
   created() {
-    this.getList()
+    // return this.$store.state.tagsView.cachedViews
+    //console.log('created')
+    //console.log(this.query)
+    this.listQuery=Object.assign({}, this.query) || {
+    page: 1,
+    limit: 20,
+    promotor: undefined,
+    search: '',
+    pay_1: false,
+    pay_2: false, // true
+    pay_3: false, // true
+    act_1: false, // true
+    act_0: false, // false
+    sort: '-fac_fecha',
+    from: undefined,
+    to: undefined,
+    fromp: undefined,
+    top: undefined,
+    fromc: undefined,
+    toc: undefined,
+    export: '',
+    countrows: '',
+    sumrows: '',
+    payedrows: ''
+  }
+    this.filterOptions()
+    this.getTotalRows()
+    // this.getSumInvoices()
+    // this.getPaymentsInvoices()
+    this.getPromotors()
+
+    if (this.roles.includes('admin')) {
+      this.currentRole = 'admin'
+    }
+    if (this.roles.includes('operator')) {
+      this.currentRole = 'operator'
+    }
+    if (this.roles.includes('promotor')) {
+      this.currentRole = 'promotor'
+    }
+    if (this.roles.includes('executive')) {
+      this.currentRole = 'executive'
+    }
+    if (this.roles.includes('supervisor')) {
+      this.currentRole = 'supervisor'
+    }
+
+    //console.log('uid')
+    this.userid = this.$store.state.user.userid
+    //console.log(this.userid)
+    // this.filterOptions()
+    this.filterPermissions = this.filterRolePermissions
   },
   methods: {
-    getList() {
-      this.listLoading = true
-      fetchList(this.listQuery).then(response => {
-        this.list = response.data.items
-        this.total = response.data.total
+      ...mapMutations({
+          'SET_QUERY': 'search/SET_QUERY'
+  }),
+      ...mapActions({               // Add this
+      'saveQuery': 'search/saveQuery'
+  }),
+    saveQueryParams: function(){
+        //console.log('in save params')
+        //console.log(this.listQuery)
+        this.SET_QUERY(this.listQuery);
+        //console.log('after save')
+        //console.log(this.listQuery)
+        //console.log('after save, query:')
+        //console.log(this.query)
+    },
+    getMinDate() {
+      var params = {
+        from: this.yearNow + '-' + this.monthNow + '-01',
+        to: this.yearNow + '-' + this.monthNow + '-' + this.dayLast
+      }
+      fetchFirstUnpaidDate(params).then(response => {
+        this.listQuery.from = JSON.parse(response.data)
+        this.unpaidDate = this.listQuery.from
+      })
+    },
+    getPromotors() {
+      // this.listLoading = true
+      fetchRolesList().then(response => {
+        this.promotorList = response.data
 
         // Just to simulate the time of the request
-        setTimeout(() => {
+        /* setTimeout(() => {
           this.listLoading = false
-        }, 1.5 * 1000)
+        }, 1.5 * 1000) */
       })
+    },
+    getList() {
+      this.listLoading = true
+      this.saveQueryParams()
+      // console.log(this.listQuery);
+      // this.$store.dispatch('search/saveQuery', this.listQuery)
+      fetchList(this.listQuery).then(response => {
+        this.list = response.data
+        // this.total = this.list.total //response.data.total
+        this.listLoading = false
+
+        // Just to simulate the time of the request
+        /* setTimeout(() => {
+          this.listLoading = false
+        }, 1.5 * 1000) */
+      })
+    },
+    getTotalRows() {
+      this.listLoading = true
+      this.listQuery.countrows = '1'
+      this.listQuery.sumrows = ''
+      this.listQuery.payedrows = ''
+      // console.log('antes count');
+      // console.log(this.listQuery);
+      fetchList(this.listQuery).then(response => {
+        // this.list = response.data
+        this.total = parseInt(response.data)
+        //console.log('got count' + this.total)
+
+        this.listQuery.countrows = ''
+        this.listQuery.sumrows = '1'
+        this.listQuery.payedrows = ''
+        fetchList(this.listQuery).then(response => {
+          // this.list = response.data
+          this.suma = parseInt(response.data)
+          // this.listQuery.sumrows = ''
+          //console.log('got sum' + this.suma)
+
+          this.listQuery.countrows = ''
+          this.listQuery.sumrows = ''
+          this.listQuery.payedrows = '1'
+          fetchList(this.listQuery).then(response => {
+            // this.list = response.data
+            this.pagado = parseInt(response.data)
+            // this.listQuery.payedrows = ''
+            //console.log('got payed' + this.pagado)
+            this.listQuery.countrows = ''
+            this.listQuery.sumrows = ''
+            this.listQuery.payedrows = ''
+
+            this.getList()
+          })
+        })
+
+        // this.getList()
+        // this.listLoading = false
+
+        // Just to simulate the time of the request
+        /* setTimeout(() => {
+          this.listLoading = false
+        }, 1.5 * 1000) */
+      })
+    },
+    handleReset() {
+        this.listQuery.search=''
+        this.listQuery.limit=20
+        this.listQuery.top=undefined
+        this.listQuery.fromc=undefined
+        this.listQuery.sort='-fac_fecha'
+        this.listQuery.fromp=undefined
+        this.listQuery.from=undefined
+        this.listQuery.to=undefined
+        this.listQuery.top=undefined
+        this.listQuery.countrows=''
+        this.listQuery.sumrows=''
+        this.listQuery.payedrows=''
+      /* var r = {
+        page: 1,
+        limit: 20,
+        promotor: undefined,
+        search: '',
+        pay_1: false,
+        pay_2: true,
+        pay_3: true,
+        act_1: true,
+        act_0: false,
+        sort: '-fac_fecha',
+        from: undefined,
+        to: undefined,
+        fromp: undefined,
+        top: undefined,
+        export: '',
+        countrows: '',
+        sumrows: '',
+        payedrows: ''
+      }*/
+      /* this.listQuery = {}
+      console.log('filter')
+      console.log(this.filterOptions);
+      console.log('list')
+      console.log(this.listQuery);*/
+      // this.listQuery.page = 1
+      this.filterOptions()
+      this.getTotalRows()
     },
     handleFilter() {
       this.listQuery.page = 1
-      this.getList()
+      this.getTotalRows()
     },
     handleModifyStatus(row, status) {
       this.$message({
-        message: '操作Success',
+        message: 'Éxito',
         type: 'success'
       })
       row.status = status
     },
     sortChange(data) {
       const { prop, order } = data
-      if (prop === 'id') {
+      if (prop === 'fac_key') {
         this.sortByID(order)
       }
     },
     sortByID(order) {
       if (order === 'ascending') {
-        this.listQuery.sort = '+id'
+        this.listQuery.sort = 'fac_key'
       } else {
-        this.listQuery.sort = '-id'
+        this.listQuery.sort = '-fac_key'
       }
       this.handleFilter()
     },
@@ -291,7 +488,7 @@ export default {
         if (valid) {
           this.temp.id = parseInt(Math.random() * 100) + 1024 // mock a id
           this.temp.author = 'vue-element-admin'
-          createArticle(this.temp).then(() => {
+          /* createArticle(this.temp).then(() => {
             this.list.unshift(this.temp)
             this.dialogFormVisible = false
             this.$notify({
@@ -300,7 +497,7 @@ export default {
               type: 'success',
               duration: 2000
             })
-          })
+          }) */
         }
       })
     },
@@ -355,26 +552,280 @@ export default {
     },
     handleDownload() {
       this.downloadLoading = true
-      import('@/vendor/Export2Excel').then(excel => {
-        const tHeader = ['timestamp', 'title', 'type', 'importance', 'status']
-        const filterVal = ['timestamp', 'title', 'type', 'importance', 'status']
-        const data = this.formatJson(filterVal, this.list)
-        excel.export_json_to_excel({
-          header: tHeader,
-          data,
-          filename: 'table-list'
+      this.listQuery.export = '1'
+      fetchList(this.listQuery).then(response => {
+        var dlist = response.data
+        this.listQuery.export = ''
+        // this.total = this.list.total //response.data.total
+        // this.listLoading = false
+
+        // Just to simulate the time of the request
+        /* setTimeout(() => {
+          this.listLoading = false
+        }, 1.5 * 1000) */
+
+        import('@/vendor/Export2Excel').then(excel => {
+          const tHeader = ['FECHA', 'FACTURA', 'CLIENTE', 'RFC', 'SUBTOTAL', 'IVA', 'TOTAL', 'PAGADO', 'FECHA_ESPERADA_DE_PAGO', 'ESTADO', 'ESTATUS', 'DEUDA', 'PROMOTOR']
+          const filterVal = ['fac_fecha', 'fac_folio', 'fac_receptornombre', 'fac_receptorrfc', 'fac_subtotal', 'fac_iva', 'fac_total', 'fac_payments', 'fac_expectedpaymentday', 'fac_pagadatext', 'fac_isactivetext', 'fac_debt', 'username']
+          const data = this.formatJson(filterVal, dlist)
+          excel.export_json_to_excel({
+            header: tHeader,
+            data,
+            filename: 'facturas'
+          })
+          this.downloadLoading = false
         })
-        this.downloadLoading = false
       })
     },
     formatJson(filterVal, jsonData) {
       return jsonData.map(v => filterVal.map(j => {
-        if (j === 'timestamp') {
+        if (j === 'fac_fecha') {
           return parseTime(v[j])
         } else {
           return v[j]
         }
       }))
+    },
+    filterOptions() {
+      /* this.listQuery['page'] = 1
+      this.listQuery['limit'] = 20
+      this.listQuery['promotor'] = undefined
+      this.listQuery['search'] = ''
+      this.listQuery['pay_1'] = false
+      this.listQuery['pay_2'] = false // true
+      this.listQuery['pay_3'] = false // true
+      this.listQuery['act_1'] = false // true
+      this.listQuery['act_0'] = false // false
+      this.listQuery['sort'] = '-fac_fecha'
+      this.listQuery['from'] = undefined
+      this.listQuery['to'] = undefined
+      this.listQuery['fromp'] = undefined
+      this.listQuery['top'] = undefined
+      this.listQuery['fromc'] = undefined
+      this.listQuery['toc'] = undefined
+      this.listQuery['export'] = ''
+      this.listQuery['countrows'] = ''
+      this.listQuery['sumrows'] = ''
+      this.listQuery['payedrows'] = '' JP*/
+      //this.listQuery = Object.assign({}, this.$store.state.search.query)
+
+      if (this.currentRole == 'promotor') {
+        this.listQuery['promotor'] = this.$store.state.user.userid
+        this.listQuery['pay_1'] = false
+        this.listQuery['pay_2'] = true
+        this.listQuery['pay_3'] = false
+        this.listQuery['act_0'] = false
+        this.listQuery['act_1'] = true
+      }
+      if (this.currentRole == 'operator') {
+        this.listQuery['promotor'] = undefined
+        this.listQuery['pay_1'] = false
+        this.listQuery['pay_2'] = true // true
+        this.listQuery['pay_3'] = false
+        this.listQuery['act_0'] = false
+        this.listQuery['act_1'] = true // true
+      }
+      if (this.roles.includes('admin')) {
+
+      }
+      if (this.currentRole == 'executive') {
+
+      }
+      if (this.currentRole == 'supervisor') {
+        this.listQuery['promotor'] = undefined
+        this.listQuery['pay_1'] = false
+        this.listQuery['pay_2'] = true
+        this.listQuery['pay_3'] = false
+        this.listQuery['act_0'] = false
+        this.listQuery['act_1'] = true
+      }
+      //this.saveQuery()
+
+    // console.log(filterOptionsGeneral);
+      // return filterOptionsGeneral
+    },
+    tableRowClassName({ row, rowIndex }) {
+      if (row.fac_expectedpaymentday === null) {
+        return 'danger-row'
+      } else {
+        var d1 = new Date()
+        var d2 = new Date(row.fac_expectedpaymentday)
+        d1.setUTCHours(13)
+        d2.setUTCHours(13)
+        d1.setUTCMinutes(0)
+        d2.setUTCMinutes(0)
+        d1.setUTCSeconds(0)
+        d2.setUTCSeconds(0)
+        d1.setUTCMilliseconds(0)
+        d2.setUTCMilliseconds(0)
+
+        if (d1.getTime() > d2.getTime()) {
+          return 'danger-row'
+        } else if (d1.getTime() === d2.getTime()) {
+          return 'warning-row'
+        }
+      }
+
+      return ''
+    },
+    daysCount(value, start, status) {
+      var dif
+      var d2
+      var d1 = new Date(start)
+
+      if (status == 1 && value != null) {
+        d2 = new Date(value)
+      } else {
+        d2 = new Date()
+      }
+      dif = Math.round((d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24))
+      return dif
+    }
+  },
+  computed: {
+    ...mapGetters([
+      'roles',
+      'query'
+    ]),
+    enabledPromotorFilter() {
+      var r = {}
+      if (this.filterPermissions['promotor'] == false) {
+        r = { [`disabled`]: true }
+      }
+      return r
+    },
+    enabledP1Filter() {
+      var r = {}
+      if (this.filterPermissions['pay_1'] == false) {
+        r = { [`disabled`]: true }
+      }
+      return r
+    },
+    enabledP2Filter() {
+      var r = {}
+      if (this.filterPermissions['pay_2'] == false) {
+        r = { [`disabled`]: true }
+      }
+      return r
+    },
+    enabledP3Filter() {
+      var r = {}
+      if (this.filterPermissions['pay_3'] == false) {
+        r = { [`disabled`]: true }
+      }
+      return r
+    },
+    enabledA0Filter() {
+      var r = {}
+      if (this.filterPermissions['act_0'] == false) {
+        r = { [`disabled`]: true }
+      }
+      return r
+    },
+    enabledA1Filter() {
+      var r = {}
+      if (this.filterPermissions['act_1'] == false) {
+        r = { [`disabled`]: true }
+      }
+      return r
+    },
+    filterRolePermissions() {
+      var permissionsGeneral = {
+        promotor: true,
+        pay_1: true,
+        pay_2: true,
+        pay_3: true,
+        act_1: true,
+        act_0: true
+      }
+      if (this.currentRole == 'promotor') {
+        permissionsGeneral['promotor'] = false
+        permissionsGeneral['pay_1'] = false
+        permissionsGeneral['pay_2'] = false
+        permissionsGeneral['pay_3'] = false
+        permissionsGeneral['act_0'] = false
+        permissionsGeneral['act_1'] = false
+      }
+      if (this.currentRole == 'operator') {
+        permissionsGeneral['promotor'] = true
+        permissionsGeneral['pay_1'] = true
+        permissionsGeneral['pay_2'] = true
+        permissionsGeneral['pay_3'] = false
+        permissionsGeneral['act_0'] = false
+        permissionsGeneral['act_1'] = false
+      }
+      if (this.roles.includes('admin')) {
+
+      }
+      if (this.currentRole == 'executive') {
+
+      }
+      if (this.currentRole == 'supervisor') {
+        permissionsGeneral['promotor'] = true
+        permissionsGeneral['pay_1'] = true
+        permissionsGeneral['pay_2'] = true
+        permissionsGeneral['pay_3'] = false
+        permissionsGeneral['act_0'] = false
+        permissionsGeneral['act_1'] = false
+      }
+
+      return permissionsGeneral
+    },
+    fo() {
+      var foGeneral = {
+        page: 1,
+        limit: 20,
+        promotor: undefined,
+        search: '',
+        pay_1: false,
+        pay_2: false, // true
+        pay_3: false, // true
+        act_1: false, // true
+        act_0: false, // false
+        sort: '-fac_fecha',
+        from: undefined,
+        to: undefined,
+        fromp: undefined,
+        top: undefined,
+        fromc: undefined,
+        toc: undefined,
+        export: '',
+        countrows: '',
+        sumrows: '',
+        payedrows: ''
+      }
+      if (this.currentRole == 'promotor') {
+        foGeneral['promotor'] = this.$store.state.user.userid
+        foGeneral['pay_1'] = false
+        foGeneral['pay_2'] = true
+        foGeneral['pay_3'] = false
+        foGeneral['act_0'] = false
+        foGeneral['act_1'] = true
+      }
+      if (this.currentRole == 'operator') {
+        foGeneral['promotor'] = undefined
+        foGeneral['pay_1'] = false
+        foGeneral['pay_2'] = true // true
+        foGeneral['pay_3'] = false
+        foGeneral['act_0'] = false
+        foGeneral['act_1'] = true // true
+      }
+      if (this.roles.includes('admin')) {
+
+      }
+      if (this.currentRole == 'executive') {
+
+      }
+      if (this.currentRole == 'supervisor') {
+        foGeneral['promotor'] = undefined
+        foGeneral['pay_1'] = false
+        foGeneral['pay_2'] = true
+        foGeneral['pay_3'] = false
+        foGeneral['act_0'] = false
+        foGeneral['act_1'] = true
+      }
+      // console.log(filterOptionsGeneral);
+      return foGeneral
     }
   }
 }

@@ -22,3 +22,19 @@ export function logout() {
     method: 'post'
   })
 }
+
+export function fetchList(query) {
+    return request({
+      url: '/user/list',
+      method: 'get',
+      params: query
+    })
+  }
+
+  export function fetchRolesList() {
+    return request({
+      url: '/user/roles',
+      method: 'get'
+    })
+  }
+  

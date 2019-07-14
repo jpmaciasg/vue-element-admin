@@ -15,10 +15,10 @@ const userRouter = {
   children: [
     {
       path: 'list',
-      component: () => import('@/views/table/complex-table'),
-      name: 'ComplexTable',
+      component: () => import('@/views/user/user-list'),
+      name: 'UserListTable',
       meta: {
-        title: 'Listado',
+        title: 'Lista de usuarios',
         roles: ['admin', 'operator', 'promotor', 'supervisor']
       }
     },
