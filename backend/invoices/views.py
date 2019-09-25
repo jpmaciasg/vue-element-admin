@@ -195,7 +195,7 @@ class InvoiceListingAPIView(viewsets.ModelViewSet):
 
         export = request.GET.get('export','')
         currentPage= request.GET.get('page','1')
-        resultsPerPage = request.GET.get('limit','')
+        resultsPerPage = request.GET.get('limit','20')
         sort= request.GET.get('sort','-fac_fecha')
 
         startdate=None

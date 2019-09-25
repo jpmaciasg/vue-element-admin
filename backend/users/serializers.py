@@ -41,7 +41,7 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ('id', 'username','email', 'first_name', 'last_name',
                   'date_joined', 'password', 'role_key', 'role_label',
-                  'avatar','role_name')
+                  'avatar','role_name','is_active')
         extra_kwargs = {'password': {'write_only': True}}
 
         datatables_always_serialize = ('id',)
