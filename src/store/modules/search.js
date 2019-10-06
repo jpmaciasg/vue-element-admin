@@ -22,6 +22,16 @@ const state = {
     countrows: '',
     sumrows: '',
     payedrows: ''
+  },
+  queryu: Cookies.getJSON('queryu') || {
+    page: 1,
+    limit: 20,
+    role: undefined,
+    search: '',
+    act_1: false, // true
+    act_0: false, // false
+    sort: 'first_name',
+    //export: '',
   }
 }
 
@@ -33,12 +43,23 @@ const mutations = {
     //console.log('after assign')
     //console.log(state.query)
     Cookies.set('query', state.query)
-  }
+  },
+  SET_QUERYU: (state, query) => {
+    //console.log('en set_query');
+    //console.log(query);
+  state.queryu = Object.assign({}, query)//query
+  //console.log('after assign')
+  //console.log(state.query)
+  Cookies.set('queryu', state.queryu)
+}
 }
 
 const actions = {
   saveQuery({ commit, query }) {
     commit('SET_QUERY', query)
+  },
+  saveQueryU({ commit, query }) {
+    commit('SET_QUERYU', query)
   }
 }
 

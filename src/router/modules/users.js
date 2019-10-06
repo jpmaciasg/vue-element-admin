@@ -23,10 +23,15 @@ const userRouter = {
       }
     },
     {
-      path: 'dynamic-table',
-      component: () => import('@/views/table/dynamic-table/index'),
-      name: 'Agregar',
-      meta: { title: 'Dynamic Table' }
+        path: 'edit/:id(\\d+)',
+        component: () => import('@/views/user/UserDetail'),
+        name: 'EditUser',
+        meta: {
+          title: 'Ver usuario',
+          noCache: true,
+          activeMenu: '/user/list'
+        },
+        hidden: true
     }/* ,
     {
       path: 'drag-table',

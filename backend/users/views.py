@@ -99,6 +99,7 @@ class CreateUserAPIView(ListCreateAPIView):
     '''
 
     def list(self, request):
+        '''
         sort = request.GET.get('sort','username')
         pipe=sort.find('|')
         order=''
@@ -116,6 +117,107 @@ class CreateUserAPIView(ListCreateAPIView):
         queryset = User.objects.all().order_by(sort)
         
         serializer = UserSerializer(queryset, many=True)
+        return Response(serializer.data)
+'''
+
+
+        logger = logging.getLogger('restapi.users')
+        logger.info('User listing')
+
+        user=request.user
+        #logger.info('user:')
+        #logger.info(user)
+        urole=user.role_key
+
+        #logger.info('role')
+        #logger.debug(userrole)
+        #print('search role')
+        #print(urole.role_key)
+        userrole=urole.role_key
+
+        search=request.GET.get('search','')
+        
+        role=request.GET.get('role','')
+
+        activeStatus1=request.GET.get('act_1','')
+        activeStatus0=request.GET.get('act_0','')
+
+
+        #export = request.GET.get('export','')
+        currentPage= request.GET.get('page','1')
+        resultsPerPage = request.GET.get('limit','')
+        sort= request.GET.get('sort','-first_name')
+
+
+
+
+        act1=0
+        if '' != activeStatus1:
+            if activeStatus1=='true':
+                act1=1
+            else:
+                act1=0
+
+        act0=0
+        if '' != activeStatus0:
+            if activeStatus0=='true':
+                act0=1
+            else:
+                act0=0
+
+
+        rol=-1
+        if role != '':
+            rol = int(role)
+
+        User = get_user_model()
+
+        #queryset=search_queryset(fromDate=startdate, toDate=enddate,search=search, is1=act1, is0=act0, ps1=pay1, ps2=pay2, ps3=pay3, relatedUser=prom, sessionProfile=userrole, fromDateP=startdatep, toDateP=enddatep, fromDateC=startdatec, toDateC=enddatec)
+        queryset = User.objects.all()
+
+        if act1 > 0 or act0 > 0:
+                q_act = Q()
+
+                if act1 > 0:
+                    q_act |= Q(is_active = True)
+
+                if act0 > 0:
+                    q_act |= Q(is_active = False)
+
+                queryset = queryset.filter( q_act )
+
+        if search != '':
+                q_search = Q()
+
+                q_search |= Q(firstname__icontains = search)
+                q_search |= Q(lastname__icontains = search)
+                q_search |= Q(username__icontains = search)
+
+                queryset = queryset.filter( q_search )
+        #page = int(currentPage)
+        #perpage = int(resultsPerPage)
+        #offset=0
+        #offset = (page -1) * perpage
+        #total = 0
+        #total = perpage
+        #total = total + offset
+
+        #queryset=queryset.order_by(sort)[offset:total]
+
+
+
+        page = int(currentPage)
+        perpage = int(resultsPerPage)
+        offset=0
+        offset = (page -1) * perpage
+        total = 0
+        total = perpage
+        total = total + offset
+        queryset = queryset.order_by(sort)[offset:total]
+            
+        logger.info(queryset.query)
+        serializer = UserSerializer(queryset, many=True)
+        
         return Response(serializer.data)
 
 class AuthUserAPIView(APIView):

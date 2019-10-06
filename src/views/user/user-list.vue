@@ -4,7 +4,7 @@
       <el-input v-model="listQuery.search" placeholder="Usuario, nombre, apellido" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
       
       
-      <el-select v-model="listQuery.promotor" placeholder="Perfil" clearable style="width: 210px" class="filter-item" v-bind="enabledPromotorFilter">
+      <el-select v-model="listQuery.role" placeholder="Perfil" clearable style="width: 210px" class="filter-item" v-bind="enabledPromotorFilter">
         <el-option key="-1" label="-- Todos los perfiles --" value="0" />
         <el-option v-for="item in promotorList" :key="item.role_key" :label="item.role_label" :value="item.role_key" />
       </el-select>
@@ -123,18 +123,7 @@ import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 import { mapGetters, mapMutations, mapActions } from 'vuex'
 
-const calendarTypeOptions = [
-  { key: 'CN', display_name: 'China' },
-  { key: 'US', display_name: 'USA' },
-  { key: 'JP', display_name: 'Japan' },
-  { key: 'EU', display_name: 'Eurozone' }
-]
-
-// arr to obj, such as { CN : "China", US : "USA" }
-const calendarTypeKeyValue = calendarTypeOptions.reduce((acc, cur) => {
-  acc[cur.key] = cur.display_name
-  return acc
-}, {})
+// arr to obj, such as { CN : "China", US : "USA" 
 
 export default {
   name: 'UserList',
@@ -201,29 +190,16 @@ export default {
       pagado: 0,
       listLoading: true,
       listQuery: {
-        page: 1,
-        limit: 20,
-        promotor: undefined,
-        search: '',
-        pay_1: false,
-        pay_2: false, // true
-        pay_3: false, // true
-        act_1: false, // true
-        act_0: false, // false
-        sort: '-fac_fecha',
-        from: undefined,
-        to: undefined,
-        fromp: undefined,
-        top: undefined,
-        fromc: undefined,
-        toc: undefined,
-        export: '',
-        countrows: '',
-        sumrows: '',
-        payedrows: ''
-      },
+    page: 1,
+    limit: 20,
+    role: undefined,
+    search: '',
+    act_1: false, // true
+    act_0: false, // false
+    sort: 'first_name',
+    //export: '',
+  },
       // importanceOptions: [{ label: 'ID Ascending', key: '1' }, { label: 'ID Descending', key: '2' }, { label: 'Por confirmar', key: '2' }],
-      calendarTypeOptions,
       // sortOptions: [{ label: 'ID Ascending', key: '+id' }, { label: 'ID Descending', key: '-id' }],
       statusOptions: ['published', 'draft', 'deleted'],
       // showReviewer: false,
@@ -248,27 +224,15 @@ export default {
     // return this.$store.state.tagsView.cachedViews
     //console.log('created')
     //console.log(this.query)
-    this.listQuery=Object.assign({}, this.query) || {
+    this.listQuery=Object.assign({}, this.queryu) || {
     page: 1,
     limit: 20,
-    promotor: undefined,
+    role: undefined,
     search: '',
-    pay_1: false,
-    pay_2: false, // true
-    pay_3: false, // true
     act_1: false, // true
     act_0: false, // false
-    sort: '-fac_fecha',
-    from: undefined,
-    to: undefined,
-    fromp: undefined,
-    top: undefined,
-    fromc: undefined,
-    toc: undefined,
-    export: '',
-    countrows: '',
-    sumrows: '',
-    payedrows: ''
+    sort: 'first_name',
+    //export: '',
   }
     this.filterOptions()
     this.getTotalRows()
@@ -300,15 +264,15 @@ export default {
   },
   methods: {
       ...mapMutations({
-          'SET_QUERY': 'search/SET_QUERY'
+          'SET_QUERYU': 'search/SET_QUERYU'
   }),
       ...mapActions({               // Add this
-      'saveQuery': 'search/saveQuery'
+      'saveQueryU': 'search/saveQueryU'
   }),
     saveQueryParams: function(){
         //console.log('in save params')
         //console.log(this.listQuery)
-        this.SET_QUERY(this.listQuery);
+        this.SET_QUERYU(this.listQuery);
         //console.log('after save')
         //console.log(this.listQuery)
         //console.log('after save, query:')
@@ -353,89 +317,37 @@ export default {
     },
     getTotalRows() {
       this.listLoading = true
-      this.listQuery.countrows = '1'
-      this.listQuery.sumrows = ''
-      this.listQuery.payedrows = ''
+this.getList();
       // console.log('antes count');
       // console.log(this.listQuery);
-      fetchList(this.listQuery).then(response => {
+      //fetchList(this.listQuery).then(response => {
         // this.list = response.data
-        this.total = parseInt(response.data)
+       // this.total = parseInt(response.data)
         //console.log('got count' + this.total)
 
-        this.listQuery.countrows = ''
-        this.listQuery.sumrows = '1'
-        this.listQuery.payedrows = ''
-        fetchList(this.listQuery).then(response => {
-          // this.list = response.data
-          this.suma = parseInt(response.data)
-          // this.listQuery.sumrows = ''
-          //console.log('got sum' + this.suma)
-
-          this.listQuery.countrows = ''
-          this.listQuery.sumrows = ''
-          this.listQuery.payedrows = '1'
-          fetchList(this.listQuery).then(response => {
-            // this.list = response.data
-            this.pagado = parseInt(response.data)
-            // this.listQuery.payedrows = ''
-            //console.log('got payed' + this.pagado)
-            this.listQuery.countrows = ''
-            this.listQuery.sumrows = ''
-            this.listQuery.payedrows = ''
-
-            this.getList()
-          })
-        })
-
-        // this.getList()
+        //this.getList()
         // this.listLoading = false
 
         // Just to simulate the time of the request
         /* setTimeout(() => {
           this.listLoading = false
         }, 1.5 * 1000) */
-      })
+      //})
     },
     handleReset() {
         this.listQuery.search=''
         this.listQuery.limit=20
-        this.listQuery.top=undefined
-        this.listQuery.fromc=undefined
-        this.listQuery.sort='-fac_fecha'
-        this.listQuery.fromp=undefined
-        this.listQuery.from=undefined
-        this.listQuery.to=undefined
-        this.listQuery.top=undefined
-        this.listQuery.countrows=''
-        this.listQuery.sumrows=''
-        this.listQuery.payedrows=''
-      /* var r = {
-        page: 1,
-        limit: 20,
-        promotor: undefined,
-        search: '',
-        pay_1: false,
-        pay_2: true,
-        pay_3: true,
-        act_1: true,
-        act_0: false,
-        sort: '-fac_fecha',
-        from: undefined,
-        to: undefined,
-        fromp: undefined,
-        top: undefined,
-        export: '',
-        countrows: '',
-        sumrows: '',
-        payedrows: ''
-      }*/
-      /* this.listQuery = {}
-      console.log('filter')
-      console.log(this.filterOptions);
-      console.log('list')
-      console.log(this.listQuery);*/
-      // this.listQuery.page = 1
+this.listQuery.page=1
+        this.listQuery.sort='first_name'
+        this.listQuery.role=undefined
+
+
+
+
+    this.listQuery.act_1= false, // true
+    this.listQuery.act_0= false, // false
+
+
       this.filterOptions()
       this.getTotalRows()
     },
@@ -452,31 +364,19 @@ export default {
     },
     sortChange(data) {
       const { prop, order } = data
-      if (prop === 'fac_key') {
+      if (prop === 'id') {
         this.sortByID(order)
       }
     },
     sortByID(order) {
       if (order === 'ascending') {
-        this.listQuery.sort = 'fac_key'
+        this.listQuery.sort = 'id'
       } else {
-        this.listQuery.sort = '-fac_key'
+        this.listQuery.sort = '-id'
       }
       this.handleFilter()
     },
-    resetTemp() {
-      this.temp = {
-        id: undefined,
-        importance: 1,
-        remark: '',
-        timestamp: new Date(),
-        title: '',
-        status: 'published',
-        type: ''
-      }
-    },
     handleCreate() {
-      this.resetTemp()
       this.dialogStatus = 'create'
       this.dialogFormVisible = true
       this.$nextTick(() => {
@@ -685,7 +585,7 @@ export default {
   computed: {
     ...mapGetters([
       'roles',
-      'query'
+      'queryu'
     ]),
     enabledPromotorFilter() {
       var r = {}

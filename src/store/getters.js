@@ -14,6 +14,7 @@ const getters = {
   userid: state => state.user.id,
   username: state => state.user.username,
   email: state => state.user.email,
-  query: state => state.search.query
+  query: state => state.search.query,
+  queryu: state => state.search.queryu
 }
 export default getters
